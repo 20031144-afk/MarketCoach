@@ -1,0 +1,1157 @@
+{
+  "lesson_beginner_001": {
+    "id": "lesson_beginner_001",
+    "title": "What Moves the Market?",
+    "subtitle": "Understanding why prices change",
+    "minutes": 6,
+    "level": "Beginner",
+    "published_at": "2026-02-04T00:00:00Z",
+    "screens": {
+      "screen_001": {
+        "type": "intro",
+        "title": "What Moves the Market?",
+        "subtitle": "Understanding why prices change",
+        "order": 1,
+        "content": {
+          "icon": "trending_up"
+        }
+      },
+      "screen_002": {
+        "type": "text",
+        "title": "Buyers vs Sellers",
+        "order": 2,
+        "content": {
+          "body": "Every market has two sides: people who want to buy and people who want to sell. When more people want to buy than sell, the price goes up. When more people want to sell than buy, the price goes down.\n\nThink of it like an auction. If many people want the same item, they compete by offering higher prices. If nobody wants it, the seller has to lower the price to attract buyers.\n\nThis simple push and pull between buyers and sellers is what makes prices move every second of every trading day."
+        }
+      },
+      "screen_003": {
+        "type": "bullets",
+        "title": "Why Price Moves",
+        "order": 3,
+        "content": {
+          "points": [
+            "More buyers than sellers → price rises",
+            "More sellers than buyers → price falls",
+            "Equal balance → price stays flat",
+            "Movement happens when balance tips",
+            "Every trade has a buyer AND a seller"
+          ]
+        }
+      },
+      "screen_004": {
+        "type": "diagram",
+        "title": "Supply and Demand in Action",
+        "subtitle": "Visualizing market imbalance",
+        "order": 4,
+        "content": {
+          "imageUrl": "https://placeholder.com/market-balance-scale.png",
+          "caption": "When demand (buyers) outweighs supply (sellers), prices rise naturally"
+        }
+      },
+      "screen_005": {
+        "type": "text",
+        "title": "Why News Doesn't Always Move Price",
+        "order": 5,
+        "content": {
+          "body": "Beginners often think big news causes big price moves. But here's the truth: news only matters if it changes the balance between buyers and sellers.\n\nSometimes amazing news comes out and the price falls. Why? Because everyone already bought in anticipation. When the news arrives, there are no buyers left—only sellers taking profits.\n\nOther times, terrible news barely moves the price. The market already \"priced it in\" by selling earlier. What matters isn't the headline itself, but whether it surprises the buyers and sellers."
+        }
+      },
+      "screen_006": {
+        "type": "quiz_single",
+        "title": "Test Your Understanding",
+        "order": 6,
+        "content": {
+          "question": "What causes price to move up?",
+          "options": [
+            "Good news headlines",
+            "More buyers than sellers",
+            "High trading volume",
+            "Technical indicators turning positive"
+          ],
+          "correctIndex": 1,
+          "explanation": "Price rises when there are more buyers than sellers, creating an imbalance. News, volume, and indicators are secondary—they may influence the balance, but the imbalance itself is what moves price."
+        }
+      },
+      "screen_007": {
+        "type": "takeaways",
+        "title": "Key Takeaways",
+        "order": 7,
+        "content": {
+          "points": [
+            "Price moves because of buyer/seller imbalance",
+            "News doesn't move markets—imbalance does",
+            "Every price change reflects a shift in supply vs demand",
+            "The market is an auction happening in real-time"
+          ]
+        }
+      }
+    }
+  },
+  "lesson_beginner_002": {
+    "id": "lesson_beginner_002",
+    "title": "Market Psychology",
+    "subtitle": "Why people buy high and sell low",
+    "minutes": 7,
+    "level": "Beginner",
+    "published_at": "2026-02-04T01:00:00Z",
+    "screens": {
+      "screen_001": {
+        "type": "intro",
+        "title": "Market Psychology",
+        "subtitle": "Why people buy high and sell low",
+        "order": 1,
+        "content": {
+          "icon": "psychology"
+        }
+      },
+      "screen_002": {
+        "type": "text",
+        "title": "Human Emotions Drive Markets",
+        "order": 2,
+        "content": {
+          "body": "Markets aren't run by computers or algorithms—they're driven by millions of people making emotional decisions. Fear, greed, excitement, and panic all show up in price movements.\n\nWhen prices are rising fast, people get excited and jump in, afraid of missing out. This is greed. When prices crash, people panic and sell everything. This is fear.\n\nPatience is the rarest emotion. Most people can't sit still when everyone else is moving. Understanding these emotions helps you see why markets behave the way they do."
+        }
+      },
+      "screen_003": {
+        "type": "bullets",
+        "title": "The Three Emotions",
+        "order": 3,
+        "content": {
+          "points": [
+            "Fear: Selling in panic when prices drop",
+            "Greed: Buying when prices are already high",
+            "Patience: Waiting for the right moment",
+            "Most people lack patience",
+            "Emotions create patterns in price"
+          ]
+        }
+      },
+      "screen_004": {
+        "type": "diagram",
+        "title": "The Emotional Cycle",
+        "subtitle": "How fear and greed move markets",
+        "order": 4,
+        "content": {
+          "imageUrl": "https://placeholder.com/emotional-cycle-chart.png",
+          "caption": "Greed pushes prices up, fear pushes them down—over and over"
+        }
+      },
+      "screen_005": {
+        "type": "text",
+        "title": "Why Markets Repeat Patterns",
+        "order": 5,
+        "content": {
+          "body": "Human psychology doesn't change. People felt fear and greed 100 years ago, and they feel it today. That's why markets repeat similar patterns.\n\nWhen prices rise, excitement builds until everyone is buying. Then there's nobody left to buy, so prices fall. When prices fall, fear spreads until everyone has sold. Then there's nobody left to sell, so prices rise again.\n\nThis cycle repeats endlessly because emotions are predictable. You don't need to predict the news—you just need to recognize when fear or greed is taking over."
+        }
+      },
+      "screen_006": {
+        "type": "quiz_single",
+        "title": "Check Your Knowledge",
+        "order": 6,
+        "content": {
+          "question": "Why do beginners often buy high and sell low?",
+          "options": [
+            "They don't understand charts",
+            "They follow greed up and fear down",
+            "They use the wrong indicators",
+            "They don't have enough capital"
+          ],
+          "correctIndex": 1,
+          "explanation": "Beginners buy when greed is peaking (prices already high) and sell when fear is peaking (prices already low). Emotions drive poor timing more than knowledge gaps."
+        }
+      },
+      "screen_007": {
+        "type": "takeaways",
+        "title": "Key Takeaways",
+        "order": 7,
+        "content": {
+          "points": [
+            "Markets reflect human emotions",
+            "Fear and greed create predictable cycles",
+            "Patterns repeat because psychology doesn't change",
+            "Patience is rare and powerful",
+            "Understanding emotions helps you avoid mistakes"
+          ]
+        }
+      }
+    }
+  },
+  "lesson_beginner_003": {
+    "id": "lesson_beginner_003",
+    "title": "Different Types of Markets",
+    "subtitle": "Stocks, crypto, and forex basics",
+    "minutes": 6,
+    "level": "Beginner",
+    "published_at": "2026-02-04T02:00:00Z",
+    "screens": {
+      "screen_001": {
+        "type": "intro",
+        "title": "Different Types of Markets",
+        "subtitle": "Stocks, crypto, and forex basics",
+        "order": 1,
+        "content": {
+          "icon": "public"
+        }
+      },
+      "screen_002": {
+        "type": "text",
+        "title": "Not All Markets Are the Same",
+        "order": 2,
+        "content": {
+          "body": "The three main markets for beginners are stocks, cryptocurrency, and forex (foreign exchange). Each one has different rules, speed, and behavior.\n\nStocks represent ownership in companies. They tend to move slower and are more predictable. Crypto represents digital currencies and moves very fast with high volatility. Forex involves trading currencies like the dollar or euro—it's the biggest market but also complex.\n\nAs a beginner, you need to understand these differences before choosing where to start."
+        }
+      },
+      "screen_003": {
+        "type": "bullets",
+        "title": "Market Characteristics",
+        "order": 3,
+        "content": {
+          "points": [
+            "Stocks: Slower, company-based, easier for beginners",
+            "Crypto: Fast, volatile, 24/7 trading",
+            "Forex: Huge, currency pairs, requires more knowledge",
+            "Volatility differs wildly between markets",
+            "Start simple, expand later"
+          ]
+        }
+      },
+      "screen_004": {
+        "type": "diagram",
+        "title": "Volatility Comparison",
+        "subtitle": "How much markets move in a day",
+        "order": 4,
+        "content": {
+          "imageUrl": "https://placeholder.com/volatility-comparison-chart.png",
+          "caption": "Crypto can move 10% in hours, stocks typically move 1-3% per day"
+        }
+      },
+      "screen_005": {
+        "type": "text",
+        "title": "What Beginners Should Avoid",
+        "order": 5,
+        "content": {
+          "body": "As a beginner, avoid high volatility markets until you understand the basics. Fast-moving markets like crypto can wipe out accounts quickly if you don't know what you're doing.\n\nAlso avoid complex instruments like options, futures, or leveraged products. These multiply both gains and losses—great for experts, deadly for beginners.\n\nStart with simple stock charts. Learn to read price, understand trends, and control emotions. Once you're comfortable, you can explore other markets. Rushing into complex markets is how most beginners lose money."
+        }
+      },
+      "screen_006": {
+        "type": "quiz_single",
+        "title": "Quick Check",
+        "order": 6,
+        "content": {
+          "question": "Which market is generally best for absolute beginners?",
+          "options": [
+            "Cryptocurrency (fast-moving)",
+            "Forex (largest market)",
+            "Stocks (slower, more predictable)",
+            "Futures (high leverage)"
+          ],
+          "correctIndex": 2,
+          "explanation": "Stocks move slower and are more predictable, giving beginners time to learn without extreme volatility. Crypto and forex require more experience to manage risk effectively."
+        }
+      },
+      "screen_007": {
+        "type": "takeaways",
+        "title": "Key Takeaways",
+        "order": 7,
+        "content": {
+          "points": [
+            "Not all markets behave the same",
+            "Volatility differs greatly between stocks, crypto, and forex",
+            "Beginners should start with simpler, slower markets",
+            "Avoid leverage and complex instruments early on",
+            "Build skills first, explore variety later"
+          ]
+        }
+      }
+    }
+  },
+  "lesson_beginner_004": {
+    "id": "lesson_beginner_004",
+    "title": "What Is a Price Chart?",
+    "subtitle": "Making charts feel familiar",
+    "minutes": 6,
+    "level": "Beginner",
+    "published_at": "2026-02-04T03:00:00Z",
+    "screens": {
+      "screen_001": {
+        "type": "intro",
+        "title": "What Is a Price Chart?",
+        "subtitle": "Making charts feel familiar",
+        "order": 1,
+        "content": {
+          "icon": "show_chart"
+        }
+      },
+      "screen_002": {
+        "type": "text",
+        "title": "Time and Price",
+        "order": 2,
+        "content": {
+          "body": "A price chart is simply a graph with two axes. The horizontal axis (bottom) shows time—hours, days, or months. The vertical axis (side) shows price—how much the asset costs.\n\nAs time moves forward, the chart records where the price was at each moment. Connect those dots, and you get a line or series of candles showing the price journey.\n\nThat's it. A chart is just a visual history book. It shows what happened, not what will happen."
+        }
+      },
+      "screen_003": {
+        "type": "bullets",
+        "title": "Chart Basics",
+        "order": 3,
+        "content": {
+          "points": [
+            "X-axis = Time (left to right)",
+            "Y-axis = Price (up and down)",
+            "Charts show history, not future",
+            "Different timeframes show different details",
+            "Reading charts is a learned skill"
+          ]
+        }
+      },
+      "screen_004": {
+        "type": "diagram",
+        "title": "Anatomy of a Chart",
+        "subtitle": "Understanding axes and movement",
+        "order": 4,
+        "content": {
+          "imageUrl": "https://placeholder.com/chart-axes-diagram.png",
+          "caption": "Time flows left to right, price moves up and down"
+        }
+      },
+      "screen_005": {
+        "type": "text",
+        "title": "Candles vs Line Charts",
+        "order": 5,
+        "content": {
+          "body": "There are two main ways to display price: line charts and candlestick charts.\n\nA line chart connects closing prices with a simple line. It's clean and easy to read, but it only shows one piece of information—where the price closed.\n\nCandlestick charts show four data points: where the price opened, the highest point, the lowest point, and where it closed. This gives you much more information in each \"candle.\"\n\nMost traders use candlesticks because they show conviction and volatility, not just direction. We'll cover candles in detail in the next lesson."
+        }
+      },
+      "screen_006": {
+        "type": "quiz_single",
+        "title": "Test Your Understanding",
+        "order": 6,
+        "content": {
+          "question": "What does a price chart actually show?",
+          "options": [
+            "Future price predictions",
+            "Past price history",
+            "Buy and sell signals",
+            "Market news events"
+          ],
+          "correctIndex": 1,
+          "explanation": "Charts show past price history—what already happened. They don't predict the future, but patterns in history can give context for present decisions."
+        }
+      },
+      "screen_007": {
+        "type": "takeaways",
+        "title": "Key Takeaways",
+        "order": 7,
+        "content": {
+          "points": [
+            "Charts plot time vs price",
+            "They show history, not predictions",
+            "Line charts are simple, candles show more detail",
+            "Reading charts is a skill you build over time"
+          ]
+        }
+      }
+    }
+  },
+  "lesson_beginner_005": {
+    "id": "lesson_beginner_005",
+    "title": "Candlesticks Explained",
+    "subtitle": "Understanding open, high, low, close",
+    "minutes": 7,
+    "level": "Beginner",
+    "published_at": "2026-02-04T04:00:00Z",
+    "screens": {
+      "screen_001": {
+        "type": "intro",
+        "title": "Candlesticks Explained",
+        "subtitle": "Understanding open, high, low, close",
+        "order": 1,
+        "content": {
+          "icon": "candlestick_chart"
+        }
+      },
+      "screen_002": {
+        "type": "text",
+        "title": "What Is a Candlestick?",
+        "order": 2,
+        "content": {
+          "body": "A candlestick shows four key price points for a given time period: where it opened, the highest price reached, the lowest price reached, and where it closed.\n\nThe thick part (the \"body\") shows the range between open and close. The thin lines (the \"wicks\" or \"shadows\") show the high and low extremes.\n\nIf the close is higher than the open, the candle is usually green (or white). If the close is lower than the open, the candle is red (or black). This gives you an instant visual of whether buyers or sellers won that period."
+        }
+      },
+      "screen_003": {
+        "type": "bullets",
+        "title": "The Four Price Points",
+        "order": 3,
+        "content": {
+          "points": [
+            "Open: Where price started",
+            "High: Highest point reached",
+            "Low: Lowest point reached",
+            "Close: Where price ended",
+            "Body = range between open and close"
+          ]
+        }
+      },
+      "screen_004": {
+        "type": "diagram",
+        "title": "Anatomy of a Candlestick",
+        "subtitle": "Parts and what they mean",
+        "order": 4,
+        "content": {
+          "imageUrl": "https://placeholder.com/candlestick-anatomy.png",
+          "caption": "Body shows open-to-close range, wicks show high-low extremes"
+        }
+      },
+      "screen_005": {
+        "type": "text",
+        "title": "Big Candles vs Small Candles",
+        "order": 5,
+        "content": {
+          "body": "The size of the candle body tells you about conviction. A big green candle means buyers were strong and confident—they pushed price way up. A big red candle means sellers dominated.\n\nSmall candles (small bodies) mean indecision. The price didn't move much, and neither buyers nor sellers had strong control. This often happens when the market is waiting for news or a clear signal.\n\nLong wicks show rejection. If a candle has a long upper wick, buyers tried to push higher but were rejected by sellers. A long lower wick means sellers pushed down but buyers fought back."
+        }
+      },
+      "screen_006": {
+        "type": "quiz_single",
+        "title": "Check Your Knowledge",
+        "order": 6,
+        "content": {
+          "question": "What does a large green candle body indicate?",
+          "options": [
+            "Indecision in the market",
+            "Strong selling pressure",
+            "Strong buying pressure",
+            "High volatility only"
+          ],
+          "correctIndex": 2,
+          "explanation": "A large green candle body means the close was much higher than the open, showing strong buying pressure and conviction from buyers."
+        }
+      },
+      "screen_007": {
+        "type": "takeaways",
+        "title": "Key Takeaways",
+        "order": 7,
+        "content": {
+          "points": [
+            "Candles show open, high, low, close (OHLC)",
+            "Green (or white) = close above open",
+            "Red (or black) = close below open",
+            "Big bodies = conviction, small bodies = indecision",
+            "Wicks show where price was rejected"
+          ]
+        }
+      }
+    }
+  },
+  "lesson_beginner_006": {
+    "id": "lesson_beginner_006",
+    "title": "Understanding Trends",
+    "subtitle": "Up, down, and sideways movement",
+    "minutes": 6,
+    "level": "Beginner",
+    "published_at": "2026-02-04T05:00:00Z",
+    "screens": {
+      "screen_001": {
+        "type": "intro",
+        "title": "Understanding Trends",
+        "subtitle": "Up, down, and sideways movement",
+        "order": 1,
+        "content": {
+          "icon": "trending_up"
+        }
+      },
+      "screen_002": {
+        "type": "text",
+        "title": "What Is a Trend?",
+        "order": 2,
+        "content": {
+          "body": "A trend is the general direction the market is moving over time. There are three types: uptrend (prices rising), downtrend (prices falling), and sideways (prices moving in a range).\n\nIn an uptrend, each peak is higher than the last, and each dip is higher than the previous dip. This creates a pattern of \"higher highs and higher lows.\"\n\nIn a downtrend, it's the opposite: each peak is lower than the last, and each dip is lower too. This creates \"lower highs and lower lows.\" Sideways means price is bouncing between the same levels without a clear direction."
+        }
+      },
+      "screen_003": {
+        "type": "bullets",
+        "title": "The Three Trend Types",
+        "order": 3,
+        "content": {
+          "points": [
+            "Uptrend: Higher highs and higher lows",
+            "Downtrend: Lower highs and lower lows",
+            "Sideways: Price stuck in a range",
+            "Trends show momentum and direction",
+            "Identifying trends takes practice"
+          ]
+        }
+      },
+      "screen_004": {
+        "type": "diagram",
+        "title": "Trend Visualization",
+        "subtitle": "Higher highs vs lower lows",
+        "order": 4,
+        "content": {
+          "imageUrl": "https://placeholder.com/trend-types-chart.png",
+          "caption": "Uptrend climbs like stairs, downtrend descends, sideways moves flat"
+        }
+      },
+      "screen_005": {
+        "type": "text",
+        "title": "Why Beginners Fight Trends",
+        "order": 5,
+        "content": {
+          "body": "One of the biggest mistakes beginners make is fighting the trend. When the market is in a strong uptrend, they try to sell, thinking \"it's gone up too much.\" When the market is in a downtrend, they try to buy, thinking \"it's too cheap.\"\n\nThe problem? Trends can last longer than you expect. Trying to catch tops and bottoms usually leads to losses. The trend is not a signal to trade against—it's information about the current momentum.\n\nRespecting the trend doesn't mean blindly following it, but it does mean not fighting it without good reason. \"The trend is your friend\" is a cliché because it's true."
+        }
+      },
+      "screen_006": {
+        "type": "quiz_single",
+        "title": "Quick Check",
+        "order": 6,
+        "content": {
+          "question": "What defines an uptrend?",
+          "options": [
+            "Lower highs and lower lows",
+            "Higher highs and higher lows",
+            "Sideways price movement",
+            "High trading volume"
+          ],
+          "correctIndex": 1,
+          "explanation": "An uptrend is defined by higher highs and higher lows—each peak and dip is above the previous ones, showing upward momentum."
+        }
+      },
+      "screen_007": {
+        "type": "takeaways",
+        "title": "Key Takeaways",
+        "order": 7,
+        "content": {
+          "points": [
+            "Trends show the market's current direction",
+            "Uptrend = higher highs and lows",
+            "Downtrend = lower highs and lows",
+            "Fighting trends leads to losses",
+            "The trend is information, not a signal"
+          ]
+        }
+      }
+    }
+  },
+  "lesson_beginner_007": {
+    "id": "lesson_beginner_007",
+    "title": "Support & Resistance",
+    "subtitle": "Why price reacts at key levels",
+    "minutes": 7,
+    "level": "Beginner",
+    "published_at": "2026-02-04T06:00:00Z",
+    "screens": {
+      "screen_001": {
+        "type": "intro",
+        "title": "Support & Resistance",
+        "subtitle": "Why price reacts at key levels",
+        "order": 1,
+        "content": {
+          "icon": "horizontal_rule"
+        }
+      },
+      "screen_002": {
+        "type": "text",
+        "title": "What Are Key Levels?",
+        "order": 2,
+        "content": {
+          "body": "Support and resistance are price levels where the market tends to react repeatedly. Support is a level where price tends to stop falling and bounce back up. Resistance is a level where price tends to stop rising and fall back down.\n\nThink of support as a floor and resistance as a ceiling. The price bounces off these levels because traders remember them. If price bounced at $100 before, many traders will place buy orders near $100 again, creating another bounce.\n\nThese levels aren't magic—they're psychological. They exist because people remember past reactions and expect them to happen again."
+        }
+      },
+      "screen_003": {
+        "type": "bullets",
+        "title": "Support vs Resistance",
+        "order": 3,
+        "content": {
+          "points": [
+            "Support: Price level where buying appears",
+            "Resistance: Price level where selling appears",
+            "Levels are psychological, not exact",
+            "Markets \"remember\" past reactions",
+            "Not every level holds forever"
+          ]
+        }
+      },
+      "screen_004": {
+        "type": "diagram",
+        "title": "Support and Resistance in Action",
+        "subtitle": "Visualizing key levels",
+        "order": 4,
+        "content": {
+          "imageUrl": "https://placeholder.com/support-resistance-chart.png",
+          "caption": "Price bounces off support like a floor, stops at resistance like a ceiling"
+        }
+      },
+      "screen_005": {
+        "type": "text",
+        "title": "Why Price Remembers",
+        "order": 5,
+        "content": {
+          "body": "Markets have memory because traders have memory. If a stock repeatedly bounced at $50, traders start watching that level. When price approaches $50 again, some traders buy in anticipation, creating the bounce.\n\nThis becomes a self-fulfilling prophecy. The more times a level holds, the more traders notice it, and the stronger it becomes—until it finally breaks.\n\nFor now, you don't need to draw levels or trade them. Just recognize that certain prices attract more buyers or sellers than others. This awareness will help you read charts better."
+        }
+      },
+      "screen_006": {
+        "type": "quiz_single",
+        "title": "Test Your Understanding",
+        "order": 6,
+        "content": {
+          "question": "What is support?",
+          "options": [
+            "A level where price tends to stop falling",
+            "A level where price tends to stop rising",
+            "A level with high volume",
+            "A level set by market makers"
+          ],
+          "correctIndex": 0,
+          "explanation": "Support is a price level where buying pressure tends to appear, stopping the price from falling further and causing it to bounce back up."
+        }
+      },
+      "screen_007": {
+        "type": "takeaways",
+        "title": "Key Takeaways",
+        "order": 7,
+        "content": {
+          "points": [
+            "Support and resistance are psychological price levels",
+            "Price remembers where it reacted before",
+            "Support acts like a floor, resistance like a ceiling",
+            "These levels exist because traders expect them to",
+            "You don't need to draw them yet—just recognize them"
+          ]
+        }
+      }
+    }
+  },
+  "lesson_beginner_008": {
+    "id": "lesson_beginner_008",
+    "title": "Breakouts & Fakeouts",
+    "subtitle": "Why not every breakout is real",
+    "minutes": 6,
+    "level": "Beginner",
+    "published_at": "2026-02-04T07:00:00Z",
+    "screens": {
+      "screen_001": {
+        "type": "intro",
+        "title": "Breakouts & Fakeouts",
+        "subtitle": "Why not every breakout is real",
+        "order": 1,
+        "content": {
+          "icon": "expand"
+        }
+      },
+      "screen_002": {
+        "type": "text",
+        "title": "What Is a Breakout?",
+        "order": 2,
+        "content": {
+          "body": "A breakout happens when price moves above resistance or below support. It suggests that the old level no longer holds, and the market is moving into new territory.\n\nBreakouts can be powerful moves. When resistance finally breaks after multiple attempts, it often leads to a strong rally as sellers give up and buyers take over.\n\nBut here's the problem: not all breakouts are real. Some are \"fakeouts\"—brief moves beyond a level that quickly reverse. This is where many beginners get trapped."
+        }
+      },
+      "screen_003": {
+        "type": "bullets",
+        "title": "Breakouts vs Fakeouts",
+        "order": 3,
+        "content": {
+          "points": [
+            "Breakout: Price moves beyond a key level",
+            "Fakeout: Price breaks but quickly reverses",
+            "Real breakouts often have strong momentum",
+            "Fakeouts trap beginners who chase",
+            "Patience prevents getting faked out"
+          ]
+        }
+      },
+      "screen_004": {
+        "type": "diagram",
+        "title": "Breakout vs Fakeout",
+        "subtitle": "How to spot the difference",
+        "order": 4,
+        "content": {
+          "imageUrl": "https://placeholder.com/breakout-fakeout-chart.png",
+          "caption": "Real breakouts continue moving, fakeouts snap back quickly"
+        }
+      },
+      "screen_005": {
+        "type": "text",
+        "title": "Why Beginners Get Trapped",
+        "order": 5,
+        "content": {
+          "body": "Beginners see price break above resistance and rush to buy, thinking \"It's going up!\" But often, that breakout is a trap. Price reverses immediately, and the beginner is left holding a losing position.\n\nWhy does this happen? Sometimes big traders intentionally push price above a level to trigger stop losses or attract buyers, then reverse it. Other times, there simply aren't enough buyers to sustain the move.\n\nThe lesson here isn't to avoid breakouts—it's to avoid chasing them blindly. Real breakouts take time to confirm. Patience and observation will save you from most fakeouts."
+        }
+      },
+      "screen_006": {
+        "type": "quiz_single",
+        "title": "Check Your Knowledge",
+        "order": 6,
+        "content": {
+          "question": "What is a fakeout?",
+          "options": [
+            "A breakout that continues strongly",
+            "A breakout that quickly reverses",
+            "A support level that never breaks",
+            "A resistance level tested multiple times"
+          ],
+          "correctIndex": 1,
+          "explanation": "A fakeout is when price briefly breaks through a key level but quickly reverses back, trapping traders who bought or sold the breakout."
+        }
+      },
+      "screen_007": {
+        "type": "takeaways",
+        "title": "Key Takeaways",
+        "order": 7,
+        "content": {
+          "points": [
+            "Breakouts occur when price moves past key levels",
+            "Not every breakout is real—some are fakeouts",
+            "Fakeouts trap traders who chase without confirmation",
+            "Patience helps you avoid false moves",
+            "Real breakouts show sustained momentum"
+          ]
+        }
+      }
+    }
+  },
+  "lesson_beginner_009": {
+    "id": "lesson_beginner_009",
+    "title": "What Is an Indicator?",
+    "subtitle": "Setting healthy expectations",
+    "minutes": 6,
+    "level": "Beginner",
+    "published_at": "2026-02-04T08:00:00Z",
+    "screens": {
+      "screen_001": {
+        "type": "intro",
+        "title": "What Is an Indicator?",
+        "subtitle": "Setting healthy expectations",
+        "order": 1,
+        "content": {
+          "icon": "analytics"
+        }
+      },
+      "screen_002": {
+        "type": "text",
+        "title": "Why Indicators Exist",
+        "order": 2,
+        "content": {
+          "body": "Indicators are mathematical calculations based on price and volume. They exist to help traders see patterns, trends, and momentum more clearly than raw price alone.\n\nFor example, moving averages smooth out price to show direction. RSI measures momentum to show overbought or oversold conditions. Volume indicators show how much buying or selling is happening.\n\nIndicators are tools, not crystal balls. They don't predict the future—they summarize the past in a useful way."
+        }
+      },
+      "screen_003": {
+        "type": "bullets",
+        "title": "Key Facts About Indicators",
+        "order": 3,
+        "content": {
+          "points": [
+            "Indicators are math-based summaries of price",
+            "They help show trends and momentum",
+            "They do NOT predict the future",
+            "All indicators lag—they react to what already happened",
+            "No single indicator is perfect"
+          ]
+        }
+      },
+      "screen_004": {
+        "type": "diagram",
+        "title": "Indicator Example",
+        "subtitle": "How indicators appear on charts",
+        "order": 4,
+        "content": {
+          "imageUrl": "https://placeholder.com/indicator-example-chart.png",
+          "caption": "Indicators sit below or overlay the price chart to add context"
+        }
+      },
+      "screen_005": {
+        "type": "text",
+        "title": "Why Indicators Lag",
+        "order": 5,
+        "content": {
+          "body": "Every indicator is based on past price data. That means they lag—they react after the move has already happened. A moving average doesn't tell you where price is going; it tells you where it's been on average.\n\nThis lag is not a flaw—it's fundamental. Indicators smooth out noise and give context, but they can't see the future. Beginners often expect indicators to give \"buy\" or \"sell\" signals. That's not how they work.\n\nInstead, think of indicators as context providers. They help you understand momentum, strength, and trend—but the final decision is always yours."
+        }
+      },
+      "screen_006": {
+        "type": "quiz_single",
+        "title": "Quick Check",
+        "order": 6,
+        "content": {
+          "question": "What is the main purpose of indicators?",
+          "options": [
+            "To predict future price movements",
+            "To provide context and summarize past price",
+            "To guarantee winning trades",
+            "To replace chart reading skills"
+          ],
+          "correctIndex": 1,
+          "explanation": "Indicators provide context by summarizing past price data in useful ways. They don't predict the future or guarantee trades—they help you understand what has happened."
+        }
+      },
+      "screen_007": {
+        "type": "takeaways",
+        "title": "Key Takeaways",
+        "order": 7,
+        "content": {
+          "points": [
+            "Indicators are mathematical tools, not predictions",
+            "They lag because they're based on past data",
+            "No indicator works perfectly in all conditions",
+            "Indicators help context, not prediction",
+            "Beginners should use indicators sparingly"
+          ]
+        }
+      }
+    }
+  },
+  "lesson_beginner_010": {
+    "id": "lesson_beginner_010",
+    "title": "Moving Averages",
+    "subtitle": "Understanding averaged price",
+    "minutes": 6,
+    "level": "Beginner",
+    "published_at": "2026-02-04T09:00:00Z",
+    "screens": {
+      "screen_001": {
+        "type": "intro",
+        "title": "Moving Averages",
+        "subtitle": "Understanding averaged price",
+        "order": 1,
+        "content": {
+          "icon": "show_chart"
+        }
+      },
+      "screen_002": {
+        "type": "text",
+        "title": "What Averaging Price Means",
+        "order": 2,
+        "content": {
+          "body": "A moving average takes the average price over a certain number of periods and plots it as a smooth line. For example, a 20-period moving average adds up the last 20 closing prices and divides by 20.\n\nAs new prices come in, the average \"moves\" forward—hence the name. This creates a smooth line that filters out short-term noise and shows the general direction.\n\nMoving averages are one of the simplest and most popular indicators because they're easy to understand and visually clear."
+        }
+      },
+      "screen_003": {
+        "type": "bullets",
+        "title": "Moving Average Basics",
+        "order": 3,
+        "content": {
+          "points": [
+            "Averages price over a set number of periods",
+            "Creates a smooth line on the chart",
+            "Filters out short-term noise",
+            "Shows general trend direction",
+            "Common periods: 20, 50, 100, 200"
+          ]
+        }
+      },
+      "screen_004": {
+        "type": "diagram",
+        "title": "Moving Average on a Chart",
+        "subtitle": "Smooth line vs choppy price",
+        "order": 4,
+        "content": {
+          "imageUrl": "https://placeholder.com/moving-average-chart.png",
+          "caption": "The moving average line smooths out price swings to show trend"
+        }
+      },
+      "screen_005": {
+        "type": "text",
+        "title": "Why Smooth Lines Help Beginners",
+        "order": 5,
+        "content": {
+          "body": "Raw price moves up and down constantly, making it hard to see the overall trend. Moving averages smooth this chaos into a clear line. If the line is sloping up, the trend is up. If it's sloping down, the trend is down.\n\nBeginners often use moving averages as dynamic support or resistance. When price is above the moving average, traders look for buying opportunities. When below, they look to sell or stay cautious.\n\nBut remember: moving averages lag. They don't tell you when to enter or exit—they just show direction. Don't use them as buy or sell signals without more context."
+        }
+      },
+      "screen_006": {
+        "type": "quiz_single",
+        "title": "Test Your Understanding",
+        "order": 6,
+        "content": {
+          "question": "What does a moving average do?",
+          "options": [
+            "Predicts where price will go next",
+            "Averages price over a period to smooth the trend",
+            "Shows exact buy and sell points",
+            "Measures trading volume"
+          ],
+          "correctIndex": 1,
+          "explanation": "A moving average calculates the average price over a set number of periods, creating a smooth line that shows the general trend direction."
+        }
+      },
+      "screen_007": {
+        "type": "takeaways",
+        "title": "Key Takeaways",
+        "order": 7,
+        "content": {
+          "points": [
+            "Moving averages smooth price into a trend line",
+            "They show direction, not entry points",
+            "Common use: dynamic support/resistance",
+            "They lag—don't use them as standalone signals",
+            "Simplicity makes them beginner-friendly"
+          ]
+        }
+      }
+    }
+  },
+  "lesson_beginner_011": {
+    "id": "lesson_beginner_011",
+    "title": "Why Beginners Lose Money",
+    "subtitle": "Preventing common traps",
+    "minutes": 7,
+    "level": "Beginner",
+    "published_at": "2026-02-04T10:00:00Z",
+    "screens": {
+      "screen_001": {
+        "type": "intro",
+        "title": "Why Beginners Lose Money",
+        "subtitle": "Preventing common traps",
+        "order": 1,
+        "content": {
+          "icon": "warning"
+        }
+      },
+      "screen_002": {
+        "type": "text",
+        "title": "The Three Deadly Mistakes",
+        "order": 2,
+        "content": {
+          "body": "Most beginners lose money for three simple reasons: overtrading, chasing candles, and using too many indicators.\n\nOvertrading means taking too many trades out of boredom or excitement. Each trade has risk and cost, so more trades usually mean more losses.\n\nChasing candles means jumping in after a big move has already happened. You see a huge green candle and think \"I need to buy now!\" But you're buying at the top, right before it reverses.\n\nUsing too many indicators creates confusion. When five indicators say different things, you freeze or make random decisions."
+        }
+      },
+      "screen_003": {
+        "type": "bullets",
+        "title": "Common Beginner Mistakes",
+        "order": 3,
+        "content": {
+          "points": [
+            "Overtrading: Too many trades = too much risk",
+            "Chasing candles: Buying tops, selling bottoms",
+            "Too many indicators: Confusion and paralysis",
+            "Impatience: Forcing trades when there's nothing good",
+            "Ignoring risk: Betting too much on single trades"
+          ]
+        }
+      },
+      "screen_004": {
+        "type": "diagram",
+        "title": "The Overtrading Trap",
+        "subtitle": "More trades doesn't mean more profit",
+        "order": 4,
+        "content": {
+          "imageUrl": "https://placeholder.com/overtrading-diagram.png",
+          "caption": "Quality over quantity—fewer good trades beat many bad ones"
+        }
+      },
+      "screen_005": {
+        "type": "text",
+        "title": "Simplicity Beats Activity",
+        "order": 5,
+        "content": {
+          "body": "The best traders are often the most patient. They wait for setups that meet their criteria, and they don't force trades when nothing good is available.\n\nBeginners confuse activity with progress. They think \"If I'm not trading, I'm not learning.\" But the opposite is true. Watching the market without trading teaches you patterns and patience.\n\nYour job as a beginner is to avoid losing money while you learn. That means fewer trades, simpler setups, and absolute focus on risk management. Activity doesn't equal profit—discipline does."
+        }
+      },
+      "screen_006": {
+        "type": "quiz_single",
+        "title": "Check Your Knowledge",
+        "order": 6,
+        "content": {
+          "question": "What is the main problem with overtrading?",
+          "options": [
+            "It makes you tired",
+            "It exposes you to too much risk and cost",
+            "It requires too many indicators",
+            "It only works in uptrends"
+          ],
+          "correctIndex": 1,
+          "explanation": "Overtrading exposes you to excessive risk and trading costs. Each trade carries risk, so taking too many trades usually leads to losses, not profits."
+        }
+      },
+      "screen_007": {
+        "type": "takeaways",
+        "title": "Key Takeaways",
+        "order": 7,
+        "content": {
+          "points": [
+            "Overtrading, chasing, and too many indicators cause losses",
+            "Simplicity beats activity",
+            "Patience is more valuable than constant action",
+            "Quality trades beat quantity of trades",
+            "Discipline prevents emotional mistakes"
+          ]
+        }
+      }
+    }
+  },
+  "lesson_beginner_012": {
+    "id": "lesson_beginner_012",
+    "title": "Understanding Risk",
+    "subtitle": "Survival mindset for beginners",
+    "minutes": 7,
+    "level": "Beginner",
+    "published_at": "2026-02-04T11:00:00Z",
+    "screens": {
+      "screen_001": {
+        "type": "intro",
+        "title": "Understanding Risk",
+        "subtitle": "Survival mindset for beginners",
+        "order": 1,
+        "content": {
+          "icon": "security"
+        }
+      },
+      "screen_002": {
+        "type": "text",
+        "title": "Losing Trades Are Normal",
+        "order": 2,
+        "content": {
+          "body": "Even the best traders lose money on trades regularly. Losing is not failure—it's part of the process. What separates winners from losers is how they handle those losses.\n\nBeginners often expect to be right most of the time. When they lose a trade, they panic, double down, or quit entirely. But professionals expect losses and plan for them.\n\nIf you can't accept that losses will happen, you're not ready to trade. Risk management isn't about avoiding losses—it's about keeping losses small so they don't destroy your account."
+        }
+      },
+      "screen_003": {
+        "type": "bullets",
+        "title": "Risk Mindset Basics",
+        "order": 3,
+        "content": {
+          "points": [
+            "Losing trades are normal and expected",
+            "Small losses are manageable, big losses are deadly",
+            "Survival is more important than winning",
+            "Never risk more than you can afford to lose",
+            "One bad trade shouldn't wipe out your account"
+          ]
+        }
+      },
+      "screen_004": {
+        "type": "diagram",
+        "title": "Small Losses vs Big Losses",
+        "subtitle": "Why loss size matters",
+        "order": 4,
+        "content": {
+          "imageUrl": "https://placeholder.com/loss-size-impact-chart.png",
+          "caption": "A 10% loss needs 11% gain to recover. A 50% loss needs 100% gain."
+        }
+      },
+      "screen_005": {
+        "type": "text",
+        "title": "The Survival Mindset",
+        "order": 5,
+        "content": {
+          "body": "Your first goal as a beginner is not to make money—it's to survive. Staying in the game long enough to learn is success. Blowing up your account in the first month is failure, even if you \"learned a lesson.\"\n\nThis means keeping losses small, taking fewer trades, and never betting everything on one idea. Think of your account as your lifeline. As long as you have capital, you have chances to learn and improve.\n\nThe best traders are the ones who survived their beginner phase by being cautious, not aggressive. Speed comes later—survival comes first."
+        }
+      },
+      "screen_006": {
+        "type": "quiz_single",
+        "title": "Quick Check",
+        "order": 6,
+        "content": {
+          "question": "What should be a beginner's first goal?",
+          "options": [
+            "Make as much money as possible",
+            "Learn advanced strategies",
+            "Survive and keep losses small",
+            "Trade as often as possible"
+          ],
+          "correctIndex": 2,
+          "explanation": "A beginner's first goal is to survive—to keep losses small and stay in the game long enough to learn. Profits come later with skill and experience."
+        }
+      },
+      "screen_007": {
+        "type": "takeaways",
+        "title": "Key Takeaways",
+        "order": 7,
+        "content": {
+          "points": [
+            "Losing trades are normal, even for pros",
+            "Small losses are manageable, big losses are devastating",
+            "Survival is success for beginners",
+            "Never risk more than you can afford to lose",
+            "Staying in the game long enough to learn is the goal"
+          ]
+        }
+      }
+    }
+  },
+  "lesson_beginner_013": {
+    "id": "lesson_beginner_013",
+    "title": "Ready for Intermediate?",
+    "subtitle": "Knowing when to level up",
+    "minutes": 6,
+    "level": "Beginner",
+    "published_at": "2026-02-04T12:00:00Z",
+    "screens": {
+      "screen_001": {
+        "type": "intro",
+        "title": "Ready for Intermediate?",
+        "subtitle": "Knowing when to level up",
+        "order": 1,
+        "content": {
+          "icon": "school"
+        }
+      },
+      "screen_002": {
+        "type": "text",
+        "title": "What You Should Understand Now",
+        "order": 2,
+        "content": {
+          "body": "After completing the Beginner level, you should be comfortable with these concepts:\n\nYou can read a price chart and identify trends. You understand support, resistance, and why price reacts at key levels. You know how candlesticks show conviction and rejection.\n\nYou've learned that indicators like moving averages and RSI provide context, not predictions. You understand that emotions drive markets, and patterns repeat because psychology doesn't change.\n\nMost importantly, you know the beginner traps: overtrading, chasing, using too many indicators, and taking excessive risk. These lessons will save you money and frustration."
+        }
+      },
+      "screen_003": {
+        "type": "bullets",
+        "title": "What You Now Understand",
+        "order": 3,
+        "content": {
+          "points": [
+            "How to read charts and identify trends",
+            "Support, resistance, and price memory",
+            "Candlesticks and what they reveal",
+            "Indicators provide context, not signals",
+            "Common beginner mistakes and how to avoid them"
+          ]
+        }
+      },
+      "screen_004": {
+        "type": "diagram",
+        "title": "Beginner Foundation Complete",
+        "subtitle": "Your knowledge baseline",
+        "order": 4,
+        "content": {
+          "imageUrl": "https://placeholder.com/beginner-complete-diagram.png",
+          "caption": "Solid foundation built—now ready to add skill layers"
+        }
+      },
+      "screen_005": {
+        "type": "text",
+        "title": "What You Should NOT Do Yet",
+        "order": 5,
+        "content": {
+          "body": "Just because you understand the basics doesn't mean you're ready to trade aggressively or use leverage. Intermediate will teach you how to combine concepts, refine entries, and develop strategies.\n\nDon't rush. Beginners who jump into advanced topics too early usually fail because their foundation isn't solid. Stick with simple setups, small positions, and low-risk environments until you're consistently not losing money.\n\nIntermediate lessons will build on what you've learned here. They'll introduce timeframe analysis, multi-indicator confirmation, and simple strategies. But all of that requires you to be comfortable with the basics first."
+        }
+      },
+      "screen_006": {
+        "type": "quiz_single",
+        "title": "Test Your Readiness",
+        "order": 6,
+        "content": {
+          "question": "What is the main sign you're ready for Intermediate?",
+          "options": [
+            "You've made a lot of money",
+            "You understand basics and avoid beginner mistakes",
+            "You know all the indicators",
+            "You can predict price movements"
+          ],
+          "correctIndex": 1,
+          "explanation": "You're ready when you understand the basics solidly and consistently avoid beginner mistakes. Profits come with time—foundation comes first."
+        }
+      },
+      "screen_007": {
+        "type": "takeaways",
+        "title": "Key Takeaways",
+        "order": 7,
+        "content": {
+          "points": [
+            "You now have a solid foundation in market basics",
+            "Don't rush into advanced topics before mastering fundamentals",
+            "Intermediate will teach strategy and refinement",
+            "Skill comes before speed or aggression",
+            "Stay patient—building expertise takes time"
+          ]
+        }
+      }
+    }
+  }
+}

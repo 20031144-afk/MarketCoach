@@ -63,10 +63,91 @@ const mockWatchlist = [
       'Watching 40k support / 46k resistance range',
     ],
   ),
+  StockSummary(
+    ticker: 'ETH',
+    name: 'Ethereum',
+    price: 2451.72,
+    changePercent: 1.24,
+    isCrypto: true,
+    sector: 'Digital Asset',
+    industry: 'Smart Contract Platform',
+    fundamentals: {
+      'Market Cap': '\$295B',
+      'Dominance': '18.6%',
+      'Circulating Supply': '120.2M ETH',
+      'Realized Vol (30d)': '42%',
+    },
+    technicalHighlights: [
+      'Strong support at \$2400 after breaking out',
+      'Network activity increasing with L2 growth',
+      'Watching 2550 resistance for continuation',
+    ],
+  ),
+  StockSummary(
+    ticker: 'ADA',
+    name: 'Cardano',
+    price: 0.58,
+    changePercent: 2.15,
+    isCrypto: true,
+    sector: 'Digital Asset',
+    industry: 'Smart Contract Platform',
+    fundamentals: {
+      'Market Cap': '\$20.5B',
+      'Dominance': '1.3%',
+      'Circulating Supply': '35.3B ADA',
+      'Realized Vol (30d)': '48%',
+    },
+    technicalHighlights: [
+      'Breaking above 50-day MA with increasing volume',
+      'Development activity remains strong',
+      'Key resistance at \$0.65 from previous highs',
+    ],
+  ),
+  StockSummary(
+    ticker: 'XRP',
+    name: 'Ripple',
+    price: 0.52,
+    changePercent: -1.34,
+    isCrypto: true,
+    sector: 'Digital Asset',
+    industry: 'Payment Protocol',
+    fundamentals: {
+      'Market Cap': '\$28.7B',
+      'Dominance': '1.8%',
+      'Circulating Supply': '55.2B XRP',
+      'Realized Vol (30d)': '51%',
+    },
+    technicalHighlights: [
+      'Consolidating in tight range after recent rally',
+      'Legal clarity driving institutional interest',
+      'Support at \$0.48, resistance at \$0.58',
+    ],
+  ),
+  StockSummary(
+    ticker: 'XLM',
+    name: 'Stellar',
+    price: 0.11,
+    changePercent: 0.87,
+    isCrypto: true,
+    sector: 'Digital Asset',
+    industry: 'Payment Protocol',
+    fundamentals: {
+      'Market Cap': '\$3.1B',
+      'Dominance': '0.2%',
+      'Circulating Supply': '28.5B XLM',
+      'Realized Vol (30d)': '54%',
+    },
+    technicalHighlights: [
+      'Following Bitcoin correlation closely',
+      'Partnership announcements supporting price',
+      'Range-bound between \$0.10 and \$0.13',
+    ],
+  ),
 ];
 
-const mockLessons = [
+final mockLessons = [
   Lesson(
+    id: 'lesson_pe_ratio',
     title: 'Price to Earnings (P/E) explained',
     subtitle: 'A quick way to tell if a stock looks pricey or cheap',
     minutes: 3,
@@ -80,6 +161,7 @@ const mockLessons = [
         'Example: AAPL at \$187 with earnings per share of \$5.93 → P/E ≈ 31.5. Compare with peers before judging.',
   ),
   Lesson(
+    id: 'lesson_support_resistance',
     title: 'Support & resistance with pictures',
     subtitle: 'Why prices often bounce at familiar zones',
     minutes: 4,
@@ -92,6 +174,7 @@ const mockLessons = [
         'Tip: Draw zones, not single lines. Look for clusters of past highs/lows and volume.',
   ),
   Lesson(
+    id: 'lesson_volatility',
     title: 'Volatility made simple',
     subtitle: 'How “bumpy” a ride to expect before you buy',
     minutes: 3,
@@ -104,6 +187,7 @@ const mockLessons = [
         'Use case: Size smaller in high volatility to avoid large dollar swings.',
   ),
   Lesson(
+    id: 'lesson_position_sizing',
     title: 'Position sizing with a safety buffer',
     subtitle: 'Keep losses small so you can keep playing',
     minutes: 4,
@@ -115,6 +199,7 @@ const mockLessons = [
         'Small, consistent risk keeps losing streaks survivable and emotions calmer.',
   ),
   Lesson(
+    id: 'lesson_stops',
     title: 'Stops that respect the idea',
     subtitle: 'Place exits beyond normal noise',
     minutes: 5,
@@ -126,6 +211,7 @@ const mockLessons = [
         'Figure: price bouncing near support with a shaded “noise” zone and a stop under it.',
   ),
   Lesson(
+    id: 'lesson_catalysts',
     title: 'Macro vs micro catalysts',
     subtitle: 'What can move prices this week',
     minutes: 5,
@@ -180,6 +266,24 @@ const mockCryptoIndices = [
     ticker: 'SOL',
     value: 102.41,
     changePercent: -2.1,
+  ),
+  MarketIndex(
+    name: 'Cardano',
+    ticker: 'ADA',
+    value: 0.58,
+    changePercent: 2.15,
+  ),
+  MarketIndex(
+    name: 'Ripple',
+    ticker: 'XRP',
+    value: 0.52,
+    changePercent: -1.34,
+  ),
+  MarketIndex(
+    name: 'Stellar',
+    ticker: 'XLM',
+    value: 0.11,
+    changePercent: 0.87,
   ),
 ];
 

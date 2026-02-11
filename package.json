@@ -1,0 +1,11 @@
+{
+  "name": "market-coach-firebase",
+  "version": "1.0.0",
+  "description": "Firebase import scripts for MarketCoach",
+  "scripts": {
+    "import-lessons": "node scripts/import_lessons.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.0.0"
+  }
+}

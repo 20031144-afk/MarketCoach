@@ -1,4 +1,4 @@
-package com.example.market_coach
+package com.finance.coach
 
 import io.flutter.embedding.android.FlutterActivity
 

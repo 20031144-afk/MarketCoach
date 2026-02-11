@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../data/mock_data.dart';
 import '../../models/news_item.dart';
+import '../../widgets/glass_card.dart';
 
 class NewsScreen extends StatelessWidget {
   const NewsScreen({super.key});
@@ -57,12 +58,11 @@ class NewsScreen extends StatelessWidget {
                 final sentimentColor = _sentimentColor(item.sentiment);
                 return Padding(
                   padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
-                  child: Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
+                  child: GlassCard(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                           Row(
                             children: [
                               Text(
@@ -123,7 +123,6 @@ class NewsScreen extends StatelessWidget {
                             ),
                           ),
                         ],
-                      ),
                     ),
                   ),
                 );

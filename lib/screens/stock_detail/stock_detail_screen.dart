@@ -1,17 +1,90 @@
-import 'package:flutter/material.dart';
+import 'dart:async';
 
+import 'package:flutter/material.dart';
+import 'package:syncfusion_flutter_charts/charts.dart';
+
+import '../../models/candle.dart';
+import '../../models/quote.dart';
 import '../../models/stock_summary.dart';
+import '../../services/candle_service.dart';
+import '../../services/quote_service.dart';
+import '../../utils/crypto_helper.dart';
 import '../../widgets/live_line_chart.dart';
 
-class StockDetailScreen extends StatelessWidget {
+class StockDetailScreen extends StatefulWidget {
   final StockSummary stock;
 
   const StockDetailScreen({super.key, required this.stock});
 
   @override
+  State<StockDetailScreen> createState() => _StockDetailScreenState();
+}
+
+class _StockDetailScreenState extends State<StockDetailScreen> {
+  final _candleService = BinanceCandleService();
+  final _quoteService = BinanceQuoteService();
+  Stream<List<Candle>>? _candleStream;
+  StreamSubscription<Map<String, Quote>>? _quoteSubscription;
+  StreamSubscription<List<Candle>>? _candleStreamSubscription;
+  Quote? _liveQuote;
+  double? _candlePrice;
+  double? _candleChangePercent;
+  String _selectedInterval = '1m';
+
+  @override
+  void initState() {
+    super.initState();
+    // Only stream live data for crypto
+    if (isCryptoSymbol(widget.stock.ticker)) {
+      _updateCandleStream();
+      _quoteSubscription = _quoteService.streamQuotes({widget.stock.ticker}).listen((quotes) {
+        if (mounted) {
+          setState(() => _liveQuote = quotes[widget.stock.ticker]);
+        }
+      });
+    }
+  }
+
+  void _updateCandleStream() {
+    _candleStreamSubscription?.cancel();
+    _candleStream = _candleService.streamCandles(widget.stock.ticker, interval: _selectedInterval);
+
+    // Subscribe to candle stream to extract price and change %
+    _candleStreamSubscription = _candleStream!.listen((candles) {
+      if (mounted && candles.isNotEmpty) {
+        final latestCandle = candles.last;
+        final firstCandle = candles.first;
+
+        setState(() {
+          _candlePrice = latestCandle.close;
+          // Calculate change % from first to last candle in the window
+          if (firstCandle.open > 0) {
+            _candleChangePercent = ((latestCandle.close - firstCandle.open) / firstCandle.open) * 100;
+          }
+        });
+      }
+    });
+  }
+
+  void _onIntervalChanged(String interval) {
+    setState(() {
+      _selectedInterval = interval;
+      _updateCandleStream();
+    });
+  }
+
+  @override
+  void dispose() {
+    _quoteSubscription?.cancel();
+    _candleStreamSubscription?.cancel();
+    _candleService.dispose();
+    _quoteService.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final changeColor = stock.isPositive ? Colors.green[600] : Colors.red[600];
 
     return DefaultTabController(
       length: 2,
@@ -23,13 +96,13 @@ class StockDetailScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                stock.ticker,
+                widget.stock.ticker,
                 style: theme.textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
               ),
               Text(
-                stock.name,
+                widget.stock.name,
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: Colors.white70,
                 ),
@@ -59,8 +132,16 @@ class StockDetailScreen extends StatelessWidget {
         ),
         body: TabBarView(
           children: [
-            StockOverviewTab(stock: stock),
-            StockInsightTab(stock: stock),
+            StockOverviewTab(
+              stock: widget.stock,
+              candleStream: _candleStream,
+              liveQuote: _liveQuote,
+              candlePrice: _candlePrice,
+              candleChangePercent: _candleChangePercent,
+              selectedInterval: _selectedInterval,
+              onIntervalChanged: isCryptoSymbol(widget.stock.ticker) ? _onIntervalChanged : null,
+            ),
+            StockInsightTab(stock: widget.stock),
           ],
         ),
       ),
@@ -70,14 +151,40 @@ class StockDetailScreen extends StatelessWidget {
 
 class StockOverviewTab extends StatelessWidget {
   final StockSummary stock;
+  final Stream<List<Candle>>? candleStream;
+  final Quote? liveQuote;
+  final double? candlePrice;
+  final double? candleChangePercent;
+  final String? selectedInterval;
+  final void Function(String)? onIntervalChanged;
 
-  const StockOverviewTab({super.key, required this.stock});
+  const StockOverviewTab({
+    super.key,
+    required this.stock,
+    this.candleStream,
+    this.liveQuote,
+    this.candlePrice,
+    this.candleChangePercent,
+    this.selectedInterval,
+    this.onIntervalChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final changeColor = stock.isPositive ? Colors.greenAccent : Colors.redAccent;
+
+    // Use live quote for crypto if available, fallback to candle data, then stock data
+    final isCrypto = isCryptoSymbol(stock.ticker);
+    final displayPrice = isCrypto && liveQuote != null
+        ? liveQuote!.price
+        : (candlePrice ?? stock.price);
+    final displayChange = isCrypto && liveQuote != null
+        ? liveQuote!.changePercent
+        : (candleChangePercent ?? stock.changePercent);
+    final isPositive = displayChange >= 0;
+    final changeColor = isPositive ? Colors.greenAccent : Colors.redAccent;
+
     final fundamentals = stock.fundamentals ??
         const {
           'Market Cap': '\$200B',
@@ -106,17 +213,39 @@ class StockOverviewTab extends StatelessWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        '\$${stock.price.toStringAsFixed(2)}',
-                        style: theme.textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
+                      Row(
+                        children: [
+                          Text(
+                            '\$${displayPrice.toStringAsFixed(2)}',
+                            style: theme.textTheme.headlineSmall?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          if (isCrypto && (liveQuote != null || candlePrice != null)) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              width: 6,
+                              height: 6,
+                              decoration: BoxDecoration(
+                                color: colorScheme.primary,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: colorScheme.primary.withOpacity(0.4),
+                                    blurRadius: 8,
+                                    spreadRadius: 1,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                       const SizedBox(height: 4),
                       Row(
                         children: [
                           Text(
-                            '${stock.isPositive ? '+' : ''}${stock.changePercent.toStringAsFixed(2)}%',
+                            '${isPositive ? '+' : ''}${displayChange.toStringAsFixed(2)}%',
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color: changeColor,
                               fontWeight: FontWeight.w600,
@@ -131,6 +260,16 @@ class StockOverviewTab extends StatelessWidget {
                               color: changeColor,
                             ),
                           ),
+                          if (isCrypto && (liveQuote != null || candlePrice != null)) ...[
+                            const SizedBox(width: 8),
+                            Text(
+                              'Live',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: colorScheme.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                       const SizedBox(height: 8),
@@ -164,6 +303,31 @@ class StockOverviewTab extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
+          if (isCrypto) ...[
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.orange.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.orange.withOpacity(0.3)),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, size: 16, color: Colors.orange[300]),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Fundamentals below are demo data. Price/change are live from Binance.',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: Colors.orange[300],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
           Wrap(
             spacing: 12,
             runSpacing: 12,
@@ -191,7 +355,9 @@ class StockOverviewTab extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        'Live price (demo stream)',
+                        candleStream != null
+                            ? 'Live price (${selectedInterval ?? '1m'} candles)'
+                            : 'Live price (demo stream)',
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
@@ -204,11 +370,24 @@ class StockOverviewTab extends StatelessWidget {
                       ),
                     ],
                   ),
+                  if (onIntervalChanged != null) ...[
+                    const SizedBox(height: 12),
+                    _IntervalSelector(
+                      selectedInterval: selectedInterval ?? '1m',
+                      onIntervalChanged: onIntervalChanged!,
+                    ),
+                  ],
                   const SizedBox(height: 12),
-                  LiveLineChart(lineColor: colorScheme.primary),
+                  LiveLineChart(
+                    lineColor: isPositive ? Colors.green[600]! : Colors.red[600]!,
+                    candleStream: candleStream,
+                    symbol: stock.ticker,
+                  ),
                   const SizedBox(height: 8),
                   Text(
-                    'Simulated live data to visualize intraday action.',
+                    candleStream != null
+                        ? 'Real-time 1-minute candles from Binance WebSocket.'
+                        : 'Simulated live data to visualize intraday action.',
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: Colors.white70,
                     ),
@@ -247,8 +426,21 @@ class StockOverviewTab extends StatelessWidget {
                       ),
                     ],
                   ),
+                  if (onIntervalChanged != null) ...[
+                    const SizedBox(height: 12),
+                    _IntervalSelector(
+                      selectedInterval: selectedInterval ?? '1m',
+                      onIntervalChanged: onIntervalChanged!,
+                    ),
+                  ],
                   const SizedBox(height: 12),
-                  LiveLineChart(lineColor: colorScheme.primary),
+                  if (candleStream != null)
+                    LiveCandlestickChart(
+                      candleStream: candleStream!,
+                      symbol: stock.ticker,
+                    )
+                  else
+                    LiveLineChart(lineColor: colorScheme.primary),
                   const SizedBox(height: 10),
                   ...technicalNotes.map(
                     (note) => Padding(
@@ -317,6 +509,130 @@ class StockOverviewTab extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class LiveCandlestickChart extends StatefulWidget {
+  final Stream<List<Candle>> candleStream;
+  final String symbol;
+
+  const LiveCandlestickChart({
+    super.key,
+    required this.candleStream,
+    required this.symbol,
+  });
+
+  @override
+  State<LiveCandlestickChart> createState() => _LiveCandlestickChartState();
+}
+
+class _LiveCandlestickChartState extends State<LiveCandlestickChart> {
+  List<Candle> _candles = [];
+  StreamSubscription<List<Candle>>? _subscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _subscription = widget.candleStream.listen((candles) {
+      if (mounted) {
+        setState(() {
+          _candles = candles;
+        });
+      }
+    });
+  }
+
+  @override
+  void didUpdateWidget(LiveCandlestickChart oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.candleStream != widget.candleStream) {
+      _subscription?.cancel();
+      _candles = [];
+      _subscription = widget.candleStream.listen((candles) {
+        if (mounted) {
+          setState(() {
+            _candles = candles;
+          });
+        }
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    if (_candles.isEmpty) {
+      return SizedBox(
+        height: 200,
+        child: Center(
+          child: CircularProgressIndicator(
+            color: theme.colorScheme.primary,
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          height: 200,
+          child: SfCartesianChart(
+            plotAreaBorderWidth: 0,
+            backgroundColor: Colors.transparent,
+            primaryXAxis: const NumericAxis(
+              isVisible: false,
+              majorGridLines: MajorGridLines(width: 0),
+            ),
+            primaryYAxis: NumericAxis(
+              opposedPosition: true,
+              axisLine: const AxisLine(width: 0),
+              majorGridLines: MajorGridLines(
+                width: 0.5,
+                color: Colors.white.withOpacity(0.1),
+              ),
+              labelStyle: TextStyle(
+                color: Colors.white70,
+                fontSize: 10,
+              ),
+            ),
+            series: <CartesianSeries>[
+              CandleSeries<Candle, int>(
+                dataSource: _candles,
+                xValueMapper: (Candle candle, index) => index,
+                lowValueMapper: (Candle candle, _) => candle.low,
+                highValueMapper: (Candle candle, _) => candle.high,
+                openValueMapper: (Candle candle, _) => candle.open,
+                closeValueMapper: (Candle candle, _) => candle.close,
+                bearColor: Colors.red[600]!,
+                bullColor: Colors.green[600]!,
+                enableSolidCandles: true,
+              ),
+            ],
+            tooltipBehavior: TooltipBehavior(
+              enable: true,
+              color: theme.cardColor,
+              textStyle: const TextStyle(color: Colors.white),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Live Binance (${widget.symbol}) • \$${_candles.last.close.toStringAsFixed(2)}',
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: Colors.white70,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -571,6 +887,61 @@ class _Chip extends StatelessWidget {
 }
 
 enum FactorTone { positive, neutral, negative }
+
+class _IntervalSelector extends StatelessWidget {
+  final String selectedInterval;
+  final void Function(String) onIntervalChanged;
+
+  const _IntervalSelector({
+    required this.selectedInterval,
+    required this.onIntervalChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    const intervals = ['1m', '5m', '15m', '1h', '4h', '1d'];
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: intervals.map((interval) {
+          final isSelected = interval == selectedInterval;
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: GestureDetector(
+              onTap: () => onIntervalChanged(interval),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? theme.colorScheme.primary.withOpacity(0.2)
+                      : Colors.white.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: isSelected
+                        ? theme.colorScheme.primary
+                        : Colors.white.withOpacity(0.1),
+                    width: 1.5,
+                  ),
+                ),
+                child: Text(
+                  interval.toUpperCase(),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: isSelected
+                        ? theme.colorScheme.primary
+                        : Colors.white70,
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
 
 class FactorCard extends StatelessWidget {
   final String title;

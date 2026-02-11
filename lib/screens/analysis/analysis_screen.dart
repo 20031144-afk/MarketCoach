@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../data/mock_data.dart';
 import '../../models/analysis_highlight.dart';
+import '../../widgets/glass_card.dart';
 import '../../widgets/live_line_chart.dart';
 
 class AnalysisScreen extends StatelessWidget {
@@ -51,12 +52,11 @@ class AnalysisScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 14),
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
+                    GlassCard(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
                             Row(
                               children: [
                                 Text(
@@ -96,7 +96,6 @@ class AnalysisScreen extends StatelessWidget {
                           ),
                           ],
                         ),
-                      ),
                     ),
                     const SizedBox(height: 16),
                     Text(
@@ -116,12 +115,11 @@ class AnalysisScreen extends StatelessWidget {
                 final tagColor = _tagColor(idea.tag);
                 return Padding(
                   padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
-                  child: Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
+                  child: GlassCard(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                           Row(
                             children: [
                               Text(
@@ -164,7 +162,6 @@ class AnalysisScreen extends StatelessWidget {
                             ),
                           ),
                         ],
-                      ),
                     ),
                   ),
                 );

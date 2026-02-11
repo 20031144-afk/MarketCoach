@@ -43,3 +43,31 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Node.js / NPM
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+
+# Firebase service account keys (sensitive)
+serviceAccountKey.json
+
+# Windows specific
+nul
+Thumbs.db
+desktop.ini
+
+# macOS specific
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Claude Code
+.claude/
+
+# Python backend (if applicable)
+python-backend/
+__pycache__/
+*.py[cod]
+*$py.class

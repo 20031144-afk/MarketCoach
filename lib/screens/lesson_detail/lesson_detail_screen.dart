@@ -1,242 +1,389 @@
 import 'package:flutter/material.dart';
-
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../models/lesson.dart';
+import '../../models/lesson_screen.dart';
+import '../../providers/lesson_provider.dart';
+import '../../providers/lesson_progress_provider.dart';
+import '../../providers/bookmarks_provider.dart';
+import '../../providers/firestore_service_provider.dart';
+import '../../providers/auth_provider.dart';
+import '../../widgets/lesson_screen_widget.dart';
 
-class LessonDetailScreen extends StatelessWidget {
-  final Lesson lesson;
+class LessonDetailScreen extends ConsumerStatefulWidget {
+  const LessonDetailScreen({
+    super.key,
+    required this.lessonId,
+  });
 
-  const LessonDetailScreen({super.key, required this.lesson});
+  final String lessonId;
+
+  @override
+  ConsumerState<LessonDetailScreen> createState() => _LessonDetailScreenState();
+}
+
+class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
+  final _pageController = PageController();
+  int _currentPage = 0;
+  final Map<int, bool> _quizAnswers = {}; // Track quiz correctness by screen index
+  final Map<int, bool> _quizMultiPassed = {}; // Track quiz_multi pass status by screen index
+  DateTime? _lessonStartTime;
+
+  @override
+  void initState() {
+    super.initState();
+    _lessonStartTime = DateTime.now();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void recordQuizAnswer(int screenIndex, bool isCorrect) {
+    setState(() {
+      _quizAnswers[screenIndex] = isCorrect;
+    });
+  }
+
+  Future<void> _nextPage(int totalScreens, Lesson currentLesson, List<LessonScreen> screens) async {
+    // Check if current screen is quiz_multi and not passed
+    final currentScreen = screens[_currentPage];
+    if (currentScreen.type == 'quiz_multi' && _quizMultiPassed[_currentPage] != true) {
+      // Show message that quiz must be passed
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please answer all quiz questions correctly to continue'),
+          backgroundColor: Colors.orange,
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
+    if (_currentPage < totalScreens - 1) {
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    } else {
+      // Mark as complete when leaving last screen
+      await _markComplete();
+
+      // Calculate quiz performance
+      int? quizScore;
+      int? correctAnswers;
+      int? totalQuestions;
+
+      if (_quizAnswers.isNotEmpty) {
+        correctAnswers = _quizAnswers.values.where((correct) => correct).length;
+        totalQuestions = _quizAnswers.length;
+        quizScore = totalQuestions > 0
+            ? ((correctAnswers / totalQuestions) * 100).round()
+            : null;
+      }
+
+      // Calculate time spent
+      final timeSpent = _lessonStartTime != null
+          ? DateTime.now().difference(_lessonStartTime!)
+          : null;
+
+      // Fetch recommended lessons
+      final recommendedLessons = await _fetchRecommendedLessons(currentLesson);
+
+      if (mounted) {
+        // Show completion dialog
+        await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('🎉 Lesson Complete!'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Congratulations on completing "${currentLesson.title}"!'),
+                if (quizScore != null && totalQuestions != null && totalQuestions > 0) ...[
+                  const SizedBox(height: 16),
+                  Text('Quiz Score: ${(quizScore * 100).toStringAsFixed(0)}%'),
+                  Text('Correct Answers: $correctAnswers/$totalQuestions'),
+                ],
+                if (timeSpent != null) ...[
+                  const SizedBox(height: 8),
+                  Text('Time Spent: ${timeSpent.inMinutes} minutes'),
+                ],
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop(); // Go back to learn screen
+                },
+                child: const Text('Done'),
+              ),
+            ],
+          ),
+        );
+      }
+    }
+  }
+
+  Future<List<Lesson>> _fetchRecommendedLessons(Lesson currentLesson) async {
+    try {
+      // Fetch lessons of the same or next level
+      final nextLevel = _getNextLevel(currentLesson.level);
+      final snapshot = await FirebaseFirestore.instance
+          .collection('lessons')
+          .where('level', whereIn: [currentLesson.level, nextLevel])
+          .limit(3)
+          .get();
+
+      final lessons = snapshot.docs
+          .map((doc) => Lesson.fromMap(doc.data(), doc.id))
+          .where((lesson) => lesson.id != currentLesson.id) // Exclude current
+          .toList();
+
+      return lessons.take(2).toList(); // Return top 2
+    } catch (e) {
+      debugPrint('Failed to fetch recommended lessons: $e');
+      return [];
+    }
+  }
+
+  String _getNextLevel(String currentLevel) {
+    switch (currentLevel.toLowerCase()) {
+      case 'beginner':
+        return 'Intermediate';
+      case 'intermediate':
+        return 'Advanced';
+      default:
+        return currentLevel;
+    }
+  }
+
+  Future<void> _updateProgress(int screen, int total) async {
+    try {
+      final userId = ref.read(userIdProvider);
+      final service = ref.read(firestoreServiceProvider);
+      await service.updateLessonProgress(
+        userId: userId,
+        lessonId: widget.lessonId,
+        currentScreen: screen,
+        totalScreens: total,
+        completed: screen == total - 1,
+      );
+    } catch (e) {
+      // Silent fail - progress tracking shouldn't block UX
+      debugPrint('Failed to update progress: $e');
+    }
+  }
+
+  Future<void> _markComplete() async {
+    try {
+      final userId = ref.read(userIdProvider);
+      final service = ref.read(firestoreServiceProvider);
+      await service.markLessonComplete(userId, widget.lessonId);
+    } catch (e) {
+      debugPrint('Failed to mark complete: $e');
+    }
+  }
+
+  Future<void> _toggleBookmark(bool isCurrentlyBookmarked) async {
+    try {
+      final userId = ref.read(userIdProvider);
+      final service = ref.read(firestoreServiceProvider);
+      if (isCurrentlyBookmarked) {
+        await service.unbookmarkLesson(userId, widget.lessonId);
+      } else {
+        await service.bookmarkLesson(userId, widget.lessonId);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to update bookmark: $e')),
+        );
+      }
+    }
+  }
+
+  void _previousPage() {
+    if (_currentPage > 0) {
+      _pageController.previousPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final lessonAsync = ref.watch(lessonProvider(widget.lessonId));
+    final progressAsync = ref.watch(lessonProgressProvider(widget.lessonId));
+    final bookmarksAsync = ref.watch(bookmarksProvider);
 
     return Scaffold(
-      appBar: AppBar(title: Text(lesson.title)),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-        physics: const BouncingScrollPhysics(),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              lesson.body,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                height: 1.4,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 24),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Live Market Indicator: RSI',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'The RSI helps identify if an asset is overbought (too expensive) '
-                      'or oversold (potentially cheap).',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: Colors.white70,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Container(
-                      height: 140,
-                      decoration: BoxDecoration(
-                        color: colorScheme.primary.withOpacity(0.06),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        'RSI chart placeholder',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: Colors.white70,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: const [
-                        _Chip(
-                          label: 'Below 30\nOversold',
-                          background: Color(0xFFE5F8F1),
-                          textColor: Color(0xFF0C9E6A),
-                        ),
-                        _Chip(
-                          label: '30-70\nNeutral',
-                          background: Color(0xFFF3F4FA),
-                          textColor: Color(0xFF3F4A79),
-                        ),
-                        _Chip(
-                          label: 'Above 70\nOverbought',
-                          background: Color(0xFFFFEDEA),
-                          textColor: Color(0xFFCF3B2E),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Card(
-              color: colorScheme.primary.withOpacity(0.05),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Key points',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    _BulletPoint(
-                      text:
-                          'Higher P/E usually means higher growth expectations.',
-                    ),
-                    _BulletPoint(
-                      text: 'Lower P/E can mean slower growth or higher risk.',
-                    ),
-                    _BulletPoint(
-                      text: 'Compare P/E ratios between similar companies.',
-                    ),
-                    _BulletPoint(
-                      text:
-                          'There is no single good P/E; it depends on the industry and growth path.',
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Indicator quick guide',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    _BulletPoint(
-                      text:
-                          'Moving Average (figure: smooth line over candles) — shows the average price; price above it suggests an uptrend.',
-                    ),
-                    _BulletPoint(
-                      text:
-                          'Support/Resistance (figure: horizontal bands) — highlight where price paused before; expect reactions near these bands.',
-                    ),
-                    _BulletPoint(
-                      text:
-                          'MACD (figure: two lines crossing) — cross above signal line hints momentum turning up; cross below hints cooling.',
-                    ),
-                    _BulletPoint(
-                      text:
-                          'Volume (figure: bars at bottom) — spikes on a breakout add confidence; weak volume can mean a false move.',
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text('Show me a real example'),
-              ),
-            ),
-            const SizedBox(height: 4),
-            Center(
-              child: Text(
-                'See this idea applied to Apple.',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: Colors.white70,
-                ),
-              ),
-            ),
-          ],
+      appBar: AppBar(
+        title: Text(
+          lessonAsync.maybeWhen(
+            data: (data) => data.lesson.title,
+            orElse: () => 'Lesson',
+          ),
         ),
+        actions: [
+          // Bookmark button
+          bookmarksAsync.maybeWhen(
+            data: (bookmarks) {
+              final isBookmarked = bookmarks.contains(widget.lessonId);
+              return IconButton(
+                icon: Icon(
+                  isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                  color: isBookmarked ? Colors.amber : null,
+                ),
+                onPressed: () => _toggleBookmark(isBookmarked),
+                tooltip: isBookmarked ? 'Remove bookmark' : 'Bookmark lesson',
+              );
+            },
+            orElse: () => const SizedBox(width: 48),
+          ),
+          // Show checkmark if lesson completed
+          progressAsync.maybeWhen(
+            data: (progress) {
+              if (progress?.completed == true) {
+                return const Padding(
+                  padding: EdgeInsets.only(right: 8.0),
+                  child: Icon(Icons.check_circle, color: Colors.green),
+                );
+              }
+              return const SizedBox.shrink();
+            },
+            orElse: () => const SizedBox.shrink(),
+          ),
+          lessonAsync.maybeWhen(
+            data: (data) => Padding(
+              padding: const EdgeInsets.only(right: 16.0),
+              child: Center(
+                child: Text(
+                  '${_currentPage + 1}/${data.screens.length}',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ),
+            ),
+            orElse: () => const SizedBox.shrink(),
+          ),
+        ],
+      ),
+      body: lessonAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, stack) => _buildError(error.toString()),
+        data: (data) => _buildContent(data.screens),
+      ),
+      bottomNavigationBar: lessonAsync.maybeWhen(
+        data: (data) => _buildBottomBar(
+          data.screens.length,
+          data.lesson,
+          data.screens,
+        ),
+        orElse: () => null,
       ),
     );
   }
-}
 
-class _BulletPoint extends StatelessWidget {
-  final String text;
-
-  const _BulletPoint({required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildError(String error) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text('• '),
-          Expanded(
-            child: Text(
-              text,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: Colors.white,
-              ),
-            ),
+          const Icon(Icons.error_outline, size: 64),
+          const SizedBox(height: 16),
+          Text(error),
+          const SizedBox(height: 16),
+          FilledButton(
+            onPressed: () => ref.invalidate(lessonProvider(widget.lessonId)),
+            child: const Text('Retry'),
           ),
         ],
       ),
     );
   }
-}
 
-class _Chip extends StatelessWidget {
-  final String label;
-  final Color background;
-  final Color textColor;
+  Widget _buildContent(List<LessonScreen> screens) {
+    // Sort screens: non-quiz first, then quiz at end
+    final sortedScreens = _sortScreensWithQuizAtEnd(screens);
 
-  const _Chip({
-    required this.label,
-    required this.background,
-    required this.textColor,
-  });
+    return Column(
+      children: [
+        LinearProgressIndicator(
+          value: (_currentPage + 1) / sortedScreens.length,
+        ),
+        Expanded(
+          child: PageView.builder(
+            controller: _pageController,
+            onPageChanged: (index) {
+              setState(() => _currentPage = index);
+              // Update progress when page changes
+              _updateProgress(index, sortedScreens.length);
+            },
+            itemCount: sortedScreens.length,
+            itemBuilder: (context, index) {
+              return LessonScreenWidget(
+                screen: sortedScreens[index],
+                onQuizAnswered: (isCorrect) {
+                  recordQuizAnswer(index, isCorrect);
+                },
+                onQuizPassed: () {
+                  setState(() {
+                    _quizMultiPassed[index] = true;
+                  });
+                },
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
 
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+  List<LessonScreen> _sortScreensWithQuizAtEnd(List<LessonScreen> screens) {
+    // Separate quiz and non-quiz screens
+    final nonQuizScreens = screens
+        .where((screen) => screen.type != 'quiz_single')
+        .toList()
+      ..sort((a, b) => a.order.compareTo(b.order));
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: ShapeDecoration(
-        color: background,
-        shape: const StadiumBorder(),
-      ),
-      child: Text(
-        label,
-        style: theme.textTheme.bodySmall?.copyWith(
-          color: textColor,
-          fontWeight: FontWeight.w500,
+    final quizScreens = screens
+        .where((screen) => screen.type == 'quiz_single')
+        .toList()
+      ..sort((a, b) => a.order.compareTo(b.order));
+
+    // Return non-quiz screens first, then quiz screens
+    return [...nonQuizScreens, ...quizScreens];
+  }
+
+  Widget _buildBottomBar(int screensLength, Lesson lesson, List<LessonScreen> screens) {
+    final isFirstPage = _currentPage == 0;
+    final isLastPage = _currentPage == screensLength - 1;
+
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          children: [
+            if (!isFirstPage)
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: _previousPage,
+                  child: const Text('Previous'),
+                ),
+              ),
+            if (!isFirstPage && !isLastPage) const SizedBox(width: 16),
+            Expanded(
+              child: FilledButton(
+                onPressed: () => _nextPage(screensLength, lesson, screens),
+                child: Text(isLastPage ? 'Complete Lesson' : 'Next'),
+              ),
+            ),
+          ],
         ),
       ),
     );
