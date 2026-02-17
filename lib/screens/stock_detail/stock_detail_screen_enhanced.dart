@@ -52,9 +52,9 @@ class _StockDetailScreenEnhancedState extends ConsumerState<StockDetailScreenEnh
   bool _showMACD = true;
 
   // Indicator settings
-  MAType _maType = MAType.sma;
+  MAType _maType = MAType.none;
   bool _showBollingerBands = false;
-  SRType _srType = SRType.simple;
+  SRType _srType = SRType.none;
   SubChartType _subChartType = SubChartType.rsi;
 
   @override
