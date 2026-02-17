@@ -50,26 +50,81 @@ class TechnicalAnalysisService {
     return sma;
   }
 
-  /// Calculate Support level (recent low)
-  static double calculateSupport(List<Candle> candles, {int lookback = 20}) {
-    if (candles.isEmpty) return 0;
+  /// Calculate Support level using swing lows.
+  ///
+  /// Finds local swing lows (candles where the low is lower than [window]
+  /// candles on each side) and returns the most significant cluster near
+  /// the current price — i.e. the strongest floor the price has bounced off.
+  static double calculateSupport(List<Candle> candles, {int window = 5}) {
+    if (candles.length < window * 2 + 1) {
+      // Not enough data — fall back to lowest low in entire dataset
+      return candles.map((c) => c.low).reduce((a, b) => a < b ? a : b);
+    }
 
-    final recentCandles = candles.length > lookback
-        ? candles.sublist(candles.length - lookback)
-        : candles;
+    final currentPrice = candles.last.close;
+    final swingLows = <double>[];
 
-    return recentCandles.map((c) => c.low).reduce((a, b) => a < b ? a : b);
+    for (int i = window; i < candles.length - window; i++) {
+      final low = candles[i].low;
+      bool isSwing = true;
+      for (int j = i - window; j <= i + window; j++) {
+        if (j != i && candles[j].low <= low) {
+          isSwing = false;
+          break;
+        }
+      }
+      if (isSwing) swingLows.add(low);
+    }
+
+    if (swingLows.isEmpty) {
+      return candles.map((c) => c.low).reduce((a, b) => a < b ? a : b);
+    }
+
+    // Return the highest swing low that is still below current price
+    // (closest floor beneath price = strongest support)
+    final belowPrice = swingLows.where((v) => v < currentPrice).toList()
+      ..sort();
+    if (belowPrice.isNotEmpty) return belowPrice.last;
+
+    // All swing lows are above current price — return the absolute lowest
+    return swingLows.reduce((a, b) => a < b ? a : b);
   }
 
-  /// Calculate Resistance level (recent high)
-  static double calculateResistance(List<Candle> candles, {int lookback = 20}) {
-    if (candles.isEmpty) return 0;
+  /// Calculate Resistance level using swing highs.
+  ///
+  /// Finds local swing highs and returns the most significant ceiling above
+  /// the current price — the level where price has previously reversed.
+  static double calculateResistance(List<Candle> candles, {int window = 5}) {
+    if (candles.length < window * 2 + 1) {
+      return candles.map((c) => c.high).reduce((a, b) => a > b ? a : b);
+    }
 
-    final recentCandles = candles.length > lookback
-        ? candles.sublist(candles.length - lookback)
-        : candles;
+    final currentPrice = candles.last.close;
+    final swingHighs = <double>[];
 
-    return recentCandles.map((c) => c.high).reduce((a, b) => a > b ? a : b);
+    for (int i = window; i < candles.length - window; i++) {
+      final high = candles[i].high;
+      bool isSwing = true;
+      for (int j = i - window; j <= i + window; j++) {
+        if (j != i && candles[j].high >= high) {
+          isSwing = false;
+          break;
+        }
+      }
+      if (isSwing) swingHighs.add(high);
+    }
+
+    if (swingHighs.isEmpty) {
+      return candles.map((c) => c.high).reduce((a, b) => a > b ? a : b);
+    }
+
+    // Return the lowest swing high that is still above current price
+    // (closest ceiling = strongest resistance)
+    final abovePrice = swingHighs.where((v) => v > currentPrice).toList()
+      ..sort();
+    if (abovePrice.isNotEmpty) return abovePrice.first;
+
+    return swingHighs.reduce((a, b) => a > b ? a : b);
   }
 
   /// Calculate Pivot Points

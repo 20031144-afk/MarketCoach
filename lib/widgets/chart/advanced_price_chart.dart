@@ -7,6 +7,65 @@ import '../../services/technical_analysis_service.dart';
 import 'chart_type_selector.dart';
 import 'advanced_indicator_settings.dart';
 
+/// Returns smart DateTimeAxis settings based on the span of candle data.
+/// Short intraday data → HH:mm, multi-day → MMM dd, multi-month → MMM, multi-year → yyyy.
+({DateFormat dateFormat, DateTimeIntervalType intervalType, double interval}) _smartXAxis(
+    List<Candle> candles) {
+  if (candles.length < 2) {
+    return (
+      dateFormat: DateFormat('MMM dd'),
+      intervalType: DateTimeIntervalType.days,
+      interval: 1,
+    );
+  }
+  final span = candles.last.time.difference(candles.first.time);
+  if (span.inHours <= 24) {
+    // Intraday — show HH:mm, tick every hour
+    return (
+      dateFormat: DateFormat('HH:mm'),
+      intervalType: DateTimeIntervalType.hours,
+      interval: 1,
+    );
+  } else if (span.inDays <= 14) {
+    // Up to 2 weeks — show "Jan 15", tick every day
+    return (
+      dateFormat: DateFormat('MMM d'),
+      intervalType: DateTimeIntervalType.days,
+      interval: 1,
+    );
+  } else if (span.inDays <= 90) {
+    // Up to 3 months — show "Jan 15", tick every week
+    return (
+      dateFormat: DateFormat('MMM d'),
+      intervalType: DateTimeIntervalType.days,
+      interval: 7,
+    );
+  } else if (span.inDays <= 730) {
+    // Up to 2 years — show "Jan", tick every month
+    return (
+      dateFormat: DateFormat('MMM yy'),
+      intervalType: DateTimeIntervalType.months,
+      interval: 1,
+    );
+  } else {
+    // 2+ years — show year, tick every 6 months
+    return (
+      dateFormat: DateFormat('MMM yy'),
+      intervalType: DateTimeIntervalType.months,
+      interval: 6,
+    );
+  }
+}
+
+/// Formats a Y-axis price label cleanly:
+/// ≥1M → "1.2M", ≥1K → "1.2K", else 2 decimal places.
+String _formatPrice(double value) {
+  if (value >= 1000000) return '\$${(value / 1000000).toStringAsFixed(1)}M';
+  if (value >= 1000) return '\$${(value / 1000).toStringAsFixed(1)}K';
+  if (value >= 100) return '\$${value.toStringAsFixed(0)}';
+  return '\$${value.toStringAsFixed(2)}';
+}
+
 class AdvancedPriceChart extends StatefulWidget {
   final List<Candle> candles;
   final ChartType chartType;
@@ -40,6 +99,15 @@ class _AdvancedPriceChartState extends State<AdvancedPriceChart> {
         child: const Text('No data available'),
       );
     }
+
+    // --- Y-axis auto-fit: compute price range from candle lows/highs with 3% padding ---
+    final allLows  = widget.candles.map((c) => c.low).toList();
+    final allHighs = widget.candles.map((c) => c.high).toList();
+    final dataMin  = allLows.reduce((a, b) => a < b ? a : b);
+    final dataMax  = allHighs.reduce((a, b) => a > b ? a : b);
+    final priceRange = dataMax - dataMin;
+    final yMin = dataMin - priceRange * 0.03;
+    final yMax = dataMax + priceRange * 0.03;
 
     // Calculate technical indicators based on settings
     // SMA
@@ -90,6 +158,8 @@ class _AdvancedPriceChartState extends State<AdvancedPriceChart> {
         break;
     }
 
+    final xAxisSettings = _smartXAxis(widget.candles);
+
     return Column(
       children: [
         // Main Chart
@@ -97,26 +167,46 @@ class _AdvancedPriceChartState extends State<AdvancedPriceChart> {
           height: 350,
           child: SfCartesianChart(
             plotAreaBorderWidth: 0,
+            plotAreaBorderColor: Colors.transparent,
             primaryXAxis: DateTimeAxis(
               majorGridLines: const MajorGridLines(width: 0),
+              minorGridLines: const MinorGridLines(width: 0),
               axisLine: const AxisLine(width: 0),
-              labelStyle: const TextStyle(color: Colors.white70, fontSize: 10),
-              dateFormat: DateFormat('MMM dd'),
+              labelStyle: const TextStyle(color: Colors.white60, fontSize: 10),
+              dateFormat: xAxisSettings.dateFormat,
+              intervalType: xAxisSettings.intervalType,
+              interval: xAxisSettings.interval,
+              edgeLabelPlacement: EdgeLabelPlacement.shift,
+              enableAutoIntervalOnZooming: true,
             ),
             primaryYAxis: NumericAxis(
+              minimum: yMin,
+              maximum: yMax,
               majorGridLines: MajorGridLines(
                 width: 1,
-                color: Colors.white.withValues(alpha: 0.1),
+                color: Colors.white.withValues(alpha: 0.07),
+                dashArray: const <double>[3, 5],
               ),
+              minorGridLines: const MinorGridLines(width: 0),
               axisLine: const AxisLine(width: 0),
-              labelStyle: const TextStyle(color: Colors.white70, fontSize: 10),
+              labelStyle: const TextStyle(color: Colors.white60, fontSize: 10),
               opposedPosition: true,
+              desiredIntervals: 5,
+              enableAutoIntervalOnZooming: true,
+              axisLabelFormatter: (AxisLabelRenderDetails details) {
+                return ChartAxisLabel(
+                  _formatPrice(details.value.toDouble()),
+                  const TextStyle(color: Colors.white60, fontSize: 10),
+                );
+              },
             ),
             trackballBehavior: widget.trackballBehavior,
             zoomPanBehavior: ZoomPanBehavior(
               enablePinching: true,
               enablePanning: true,
+              enableMouseWheelZooming: true,
               zoomMode: ZoomMode.x,
+              enableDoubleTapZooming: true,
             ),
             series: <CartesianSeries>[
               // Bollinger Bands (if enabled) - draw first so it's in background
@@ -393,9 +483,11 @@ class _AdvancedPriceChartState extends State<AdvancedPriceChart> {
             highValueMapper: (Candle candle, _) => candle.high,
             openValueMapper: (Candle candle, _) => candle.open,
             closeValueMapper: (Candle candle, _) => candle.close,
-            bullColor: Colors.green,
-            bearColor: Colors.red,
+            bullColor: const Color(0xFF26A69A),   // teal-green — easier on the eye
+            bearColor: const Color(0xFFEF5350),   // clear red
             enableSolidCandles: true,
+            width: 0.7,
+            spacing: 0.15,
             name: 'Price',
           ),
         ];
@@ -422,8 +514,9 @@ class _AdvancedPriceChartState extends State<AdvancedPriceChart> {
             lowValueMapper: (Candle candle, _) => candle.low,
             openValueMapper: (Candle candle, _) => candle.open,
             closeValueMapper: (Candle candle, _) => candle.close,
-            bullColor: Colors.green,
-            bearColor: Colors.red,
+            bullColor: const Color(0xFF26A69A),
+            bearColor: const Color(0xFFEF5350),
+            spacing: 0.15,
             name: 'Price',
           ),
         ];

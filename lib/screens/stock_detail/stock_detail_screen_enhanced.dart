@@ -32,6 +32,7 @@ class StockDetailScreenEnhanced extends ConsumerStatefulWidget {
 class _StockDetailScreenEnhancedState extends ConsumerState<StockDetailScreenEnhanced> {
   final _candleService = BinanceCandleService();
   final _quoteService = BinanceQuoteService();
+  final _yahooService = YahooFinanceCandleService();
 
   StreamSubscription<List<Candle>>? _candleSubscription;
   StreamSubscription<Map<String, Quote>>? _quoteSubscription;
@@ -39,32 +40,81 @@ class _StockDetailScreenEnhancedState extends ConsumerState<StockDetailScreenEnh
   List<Candle> _candles = [];
   Quote? _liveQuote;
   bool _isWatchlisted = false;
+  bool _isLoading = false;
   bool _hasError = false;
   String? _errorMessage;
 
-  // Chart controls
+  // Chart controls — default differs by asset type (set in initState)
   ChartType _chartType = ChartType.candlestick;
-  String _timeframe = '1h';
+  String _timeframe = '1D';
   bool _showRSI = true;
   bool _showMACD = true;
 
   // Indicator settings
   MAType _maType = MAType.sma;
   bool _showBollingerBands = false;
-  SRType _srType = SRType.simple;
+  SRType _srType = SRType.none;
   SubChartType _subChartType = SubChartType.rsi;
+
+  bool get _isCrypto => isCryptoSymbol(widget.stock.ticker);
 
   @override
   void initState() {
     super.initState();
+    // Set sensible default timeframe per asset type
+    _timeframe = _isCrypto ? '1h' : '1D';
     _loadData();
   }
 
   void _loadData() {
-    // Only load real-time data for crypto
-    if (isCryptoSymbol(widget.stock.ticker)) {
+    if (_isCrypto) {
       _subscribeToCandles();
       _subscribeToQuotes();
+    } else {
+      _fetchStockCandles();
+    }
+  }
+
+  /// Maps stock timeframe labels to Yahoo Finance interval + range params.
+  ({String interval, String range}) _yahooParamsForTimeframe(String tf) {
+    switch (tf) {
+      case '1D': return (interval: '1d', range: '1y');
+      case '1W': return (interval: '1d', range: '2y');
+      case '1M': return (interval: '1wk', range: '1y');
+      case '3M': return (interval: '1d', range: '3mo');
+      case '1Y': return (interval: '1mo', range: '5y');
+      default:   return (interval: '1d', range: '1y');
+    }
+  }
+
+  Future<void> _fetchStockCandles() async {
+    if (!mounted) return;
+    setState(() {
+      _isLoading = true;
+      _hasError = false;
+      _errorMessage = null;
+      _candles = [];
+    });
+
+    final params = _yahooParamsForTimeframe(_timeframe);
+    final candles = await _yahooService.fetchCandles(
+      widget.stock.ticker,
+      interval: params.interval,
+      range: params.range,
+    );
+
+    if (!mounted) return;
+    if (candles.isEmpty) {
+      setState(() {
+        _isLoading = false;
+        _hasError = true;
+        _errorMessage = 'Could not load chart data for ${widget.stock.ticker}.\nCheck your internet connection and try again.';
+      });
+    } else {
+      setState(() {
+        _candles = candles;
+        _isLoading = false;
+      });
     }
   }
 
@@ -122,10 +172,12 @@ class _StockDetailScreenEnhancedState extends ConsumerState<StockDetailScreenEnh
   }
 
   void _onTimeframeChanged(String timeframe) {
-    setState(() {
-      _timeframe = timeframe;
+    setState(() => _timeframe = timeframe);
+    if (_isCrypto) {
       _subscribeToCandles();
-    });
+    } else {
+      _fetchStockCandles();
+    }
   }
 
   void _toggleWatchlist() {
@@ -206,6 +258,7 @@ class _StockDetailScreenEnhancedState extends ConsumerState<StockDetailScreenEnh
                         child: _TimeframeSelector(
                           selectedTimeframe: _timeframe,
                           onChanged: _onTimeframeChanged,
+                          isCrypto: _isCrypto,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -249,7 +302,7 @@ class _StockDetailScreenEnhancedState extends ConsumerState<StockDetailScreenEnh
                     padding: const EdgeInsets.all(12),
                     child: _hasError
                         ? _buildErrorChart()
-                        : _candles.isEmpty
+                        : (_isLoading || _candles.isEmpty)
                             ? _buildLoadingChart()
                             : AdvancedPriceChart(
                             candles: _candles,
@@ -535,7 +588,7 @@ class _StockDetailScreenEnhancedState extends ConsumerState<StockDetailScreenEnh
                 _hasError = false;
                 _errorMessage = null;
               });
-              _subscribeToCandles();
+              _loadData();
             },
           ),
         ],
@@ -822,17 +875,21 @@ class _FundamentalChip extends StatelessWidget {
 class _TimeframeSelector extends StatelessWidget {
   final String selectedTimeframe;
   final ValueChanged<String> onChanged;
+  final bool isCrypto;
 
   const _TimeframeSelector({
     required this.selectedTimeframe,
     required this.onChanged,
+    this.isCrypto = false,
   });
 
-  static const timeframes = ['1h', '4h', '1d', '1w', '1M'];
+  static const cryptoTimeframes = ['1h', '4h', '1d', '1w', '1M'];
+  static const stockTimeframes  = ['1D', '1W', '1M', '3M', '1Y'];
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final timeframes = isCrypto ? cryptoTimeframes : stockTimeframes;
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -842,7 +899,7 @@ class _TimeframeSelector extends StatelessWidget {
           return Padding(
             padding: const EdgeInsets.only(right: 8),
             child: FilterChip(
-              label: Text(tf.toUpperCase()),
+              label: Text(tf),
               selected: isSelected,
               onSelected: (_) => onChanged(tf),
               backgroundColor: theme.colorScheme.surface.withValues(alpha: 0.3),
@@ -850,6 +907,7 @@ class _TimeframeSelector extends StatelessWidget {
               labelStyle: TextStyle(
                 color: isSelected ? Colors.white : Colors.white70,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                fontSize: 13,
               ),
             ),
           );
