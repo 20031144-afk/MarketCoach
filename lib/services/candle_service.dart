@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:web_socket_channel/web_socket_channel.dart';
 
+import '../config/api_config.dart';
 import '../models/candle.dart';
 
 class BinanceCandleService {
@@ -22,7 +23,7 @@ class BinanceCandleService {
     'XLM': 'XLMUSDT',
   };
 
-  static const _maxCandles = 120;
+  static const _maxCandles = 365;
 
   WebSocketChannel? _channel;
 
@@ -281,5 +282,155 @@ class BinanceCandleService {
 
   void _log(String msg) {
     if (kDebugMode) debugPrint('[BinanceCandleService] $msg');
+  }
+}
+
+/// Fetches historical OHLCV candles from Yahoo Finance for stocks.
+/// Returns a one-shot Future (no live streaming — stocks use polling if needed).
+class YahooFinanceCandleService {
+  static const _base = 'https://query2.finance.yahoo.com/v8/finance/chart';
+
+  /// [interval]: 1d, 1wk, 1mo   [range]: 1mo, 3mo, 6mo, 1y, 2y
+  Future<List<Candle>> fetchCandles(
+    String symbol, {
+    String interval = '1d',
+    String range = '3mo',
+  }) async {
+    try {
+      final uri = Uri.parse(
+        '$_base/$symbol?interval=$interval&range=$range&includePrePost=false',
+      );
+
+      final res = await http.get(uri, headers: {
+        'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
+            '(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'Accept': 'application/json',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Origin': 'https://finance.yahoo.com',
+        'Referer': 'https://finance.yahoo.com/',
+      }).timeout(const Duration(seconds: 15));
+
+      if (res.statusCode != 200) {
+        if (kDebugMode) {
+          debugPrint('[YahooCandle] HTTP ${res.statusCode} for $symbol');
+          debugPrint('[YahooCandle] Body: ${res.body.substring(0, min(200, res.body.length))}');
+        }
+        return [];
+      }
+
+      final data = jsonDecode(res.body) as Map<String, dynamic>;
+      final result =
+          (data['chart']['result'] as List?)?.first as Map<String, dynamic>?;
+      if (result == null) return [];
+
+      final timestamps = (result['timestamp'] as List?)?.cast<int>() ?? [];
+      final quote = (result['indicators']['quote'] as List?)?.first
+          as Map<String, dynamic>?;
+      if (quote == null || timestamps.isEmpty) return [];
+
+      final opens = (quote['open'] as List?)?.cast<num?>() ?? [];
+      final highs = (quote['high'] as List?)?.cast<num?>() ?? [];
+      final lows = (quote['low'] as List?)?.cast<num?>() ?? [];
+      final closes = (quote['close'] as List?)?.cast<num?>() ?? [];
+      final volumes = (quote['volume'] as List?)?.cast<num?>() ?? [];
+
+      final candles = <Candle>[];
+      for (var i = 0; i < timestamps.length; i++) {
+        final c = closes.length > i ? closes[i] : null;
+        if (c == null) continue; // skip null rows
+        candles.add(Candle(
+          time: DateTime.fromMillisecondsSinceEpoch(timestamps[i] * 1000),
+          open: (opens.length > i ? opens[i]?.toDouble() : null) ?? c.toDouble(),
+          high: (highs.length > i ? highs[i]?.toDouble() : null) ?? c.toDouble(),
+          low: (lows.length > i ? lows[i]?.toDouble() : null) ?? c.toDouble(),
+          close: c.toDouble(),
+          volume: (volumes.length > i ? volumes[i]?.toDouble() : null) ?? 0,
+        ));
+      }
+
+      if (kDebugMode) {
+        debugPrint('[YahooCandle] $symbol: ${candles.length} candles');
+      }
+      return candles;
+    } catch (e) {
+      if (kDebugMode) debugPrint('[YahooCandle] error: $e');
+      return [];
+    }
+  }
+}
+
+/// Fetches historical daily OHLCV candles from Alpha Vantage.
+/// Requires APIConfig.alphaVantageKey to be set (free tier: 25 req/day).
+class AlphaVantageCandleService {
+  /// Returns up to [days] daily candles, newest last.
+  Future<List<Candle>> fetchDailyCandles(
+    String symbol, {
+    int days = 365,
+  }) async {
+    final key = APIConfig.alphaVantageKey;
+    if (key.isEmpty) return [];
+
+    try {
+      final uri = Uri.parse(
+        '${APIConfig.alphaVantageUrl}'
+        '?function=TIME_SERIES_DAILY'
+        '&symbol=$symbol'
+        '&outputsize=full'
+        '&apikey=$key',
+      );
+
+      if (kDebugMode) debugPrint('[AlphaVantage] Fetching $symbol...');
+
+      final res = await http
+          .get(uri, headers: {'User-Agent': 'MarketCoach/1.0'})
+          .timeout(const Duration(seconds: 15));
+
+      if (res.statusCode != 200) {
+        if (kDebugMode) debugPrint('[AlphaVantage] HTTP ${res.statusCode}');
+        return [];
+      }
+
+      final data = jsonDecode(res.body) as Map<String, dynamic>;
+
+      // API rate-limit or invalid key messages
+      if (data.containsKey('Note') || data.containsKey('Information')) {
+        if (kDebugMode) {
+          debugPrint('[AlphaVantage] ${data['Note'] ?? data['Information']}');
+        }
+        return [];
+      }
+
+      final timeSeries =
+          data['Time Series (Daily)'] as Map<String, dynamic>?;
+      if (timeSeries == null) return [];
+
+      // Sort ascending by date string (ISO format sorts correctly)
+      final entries = timeSeries.entries.toList()
+        ..sort((a, b) => a.key.compareTo(b.key));
+
+      final recent =
+          entries.length > days ? entries.sublist(entries.length - days) : entries;
+
+      final candles = recent.map((e) {
+        final v = e.value as Map<String, dynamic>;
+        return Candle(
+          time: DateTime.parse(e.key),
+          open: double.tryParse(v['1. open'] as String? ?? '') ?? 0,
+          high: double.tryParse(v['2. high'] as String? ?? '') ?? 0,
+          low: double.tryParse(v['3. low'] as String? ?? '') ?? 0,
+          close: double.tryParse(v['4. close'] as String? ?? '') ?? 0,
+          volume: double.tryParse(v['5. volume'] as String? ?? '') ?? 0,
+        );
+      }).toList();
+
+      if (kDebugMode) {
+        debugPrint('[AlphaVantage] $symbol: ${candles.length} candles');
+      }
+      return candles;
+    } catch (e) {
+      if (kDebugMode) debugPrint('[AlphaVantage] error: $e');
+      return [];
+    }
   }
 }

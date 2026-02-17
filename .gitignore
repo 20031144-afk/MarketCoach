@@ -18,10 +18,8 @@ migrate_working_dir/
 *.iws
 .idea/
 
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
+# VS Code
+.vscode/
 
 # Flutter/Dart/Pub related
 **/doc/api/
@@ -50,8 +48,16 @@ npm-debug.log
 yarn-error.log
 package-lock.json
 
-# Firebase service account keys (sensitive)
+# Firebase service account keys & config (sensitive)
 serviceAccountKey.json
+ios/Runner/GoogleService-Info.plist
+
+# API keys - never commit
+lib/config/api_config.dart
+
+# Markdown docs (keep only CLAUDE.md)
+*.md
+!CLAUDE.md
 
 # Windows specific
 nul

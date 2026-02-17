@@ -21,25 +21,85 @@ class StockDetailScreen extends StatefulWidget {
 }
 
 class _StockDetailScreenState extends State<StockDetailScreen> {
-  final _candleService = BinanceCandleService();
+  final _binanceService = BinanceCandleService();
+  final _yahooService = YahooFinanceCandleService();
+  final _alphaVantageService = AlphaVantageCandleService();
   final _quoteService = BinanceQuoteService();
+
   Stream<List<Candle>>? _candleStream;
   StreamSubscription<Map<String, Quote>>? _quoteSubscription;
   StreamSubscription<List<Candle>>? _candleStreamSubscription;
+
+  // For stock candles we hold the list directly
+  List<Candle> _stockCandles = [];
+  bool _loadingStockCandles = false;
+  bool _stockCandlesFailed = false;
+  String _stockCandleSource = '';
+
   Quote? _liveQuote;
   double? _candlePrice;
   double? _candleChangePercent;
   String _selectedInterval = '1m';
 
+  bool get _isCrypto => isCryptoSymbol(widget.stock.ticker);
+
   @override
   void initState() {
     super.initState();
-    // Only stream live data for crypto
-    if (isCryptoSymbol(widget.stock.ticker)) {
+    if (_isCrypto) {
       _updateCandleStream();
-      _quoteSubscription = _quoteService.streamQuotes({widget.stock.ticker}).listen((quotes) {
+      _quoteSubscription =
+          _quoteService.streamQuotes({widget.stock.ticker}).listen((quotes) {
         if (mounted) {
           setState(() => _liveQuote = quotes[widget.stock.ticker]);
+        }
+      });
+    } else {
+      // Stocks: fetch historical daily candles from Yahoo Finance
+      _fetchStockCandles();
+    }
+  }
+
+  Future<void> _fetchStockCandles() async {
+    setState(() {
+      _loadingStockCandles = true;
+      _stockCandlesFailed = false;
+    });
+
+    List<Candle> candles = [];
+    String source = '';
+
+    // Try Alpha Vantage first if API key is configured
+    candles = await _alphaVantageService.fetchDailyCandles(
+      widget.stock.ticker,
+      days: 365,
+    );
+    if (candles.isNotEmpty) {
+      source = 'Alpha Vantage';
+    } else {
+      // Fall back to Yahoo Finance
+      candles = await _yahooService.fetchCandles(
+        widget.stock.ticker,
+        interval: '1d',
+        range: '1y',
+      );
+      if (candles.isNotEmpty) source = 'Yahoo Finance';
+    }
+
+    if (mounted) {
+      setState(() {
+        _stockCandles = candles;
+        _stockCandleSource = source;
+        _loadingStockCandles = false;
+        _stockCandlesFailed = candles.isEmpty;
+        if (candles.isNotEmpty) {
+          _candlePrice = candles.last.close;
+          if (candles.first.open > 0) {
+            _candleChangePercent =
+                ((candles.last.close - candles.first.open) /
+                        candles.first.open) *
+                    100;
+          }
         }
       });
     }
@@ -47,19 +107,19 @@ class _StockDetailScreenState extends State<StockDetailScreen> {
 
   void _updateCandleStream() {
     _candleStreamSubscription?.cancel();
-    _candleStream = _candleService.streamCandles(widget.stock.ticker, interval: _selectedInterval);
-
-    // Subscribe to candle stream to extract price and change %
+    _candleStream = _binanceService.streamCandles(
+      widget.stock.ticker,
+      interval: _selectedInterval,
+    );
     _candleStreamSubscription = _candleStream!.listen((candles) {
       if (mounted && candles.isNotEmpty) {
-        final latestCandle = candles.last;
-        final firstCandle = candles.first;
-
+        final latest = candles.last;
+        final first = candles.first;
         setState(() {
-          _candlePrice = latestCandle.close;
-          // Calculate change % from first to last candle in the window
-          if (firstCandle.open > 0) {
-            _candleChangePercent = ((latestCandle.close - firstCandle.open) / firstCandle.open) * 100;
+          _candlePrice = latest.close;
+          if (first.open > 0) {
+            _candleChangePercent =
+                ((latest.close - first.open) / first.open) * 100;
           }
         });
       }
@@ -67,6 +127,7 @@ class _StockDetailScreenState extends State<StockDetailScreen> {
   }
 
   void _onIntervalChanged(String interval) {
+    if (!_isCrypto) return; // interval changes only apply to live crypto
     setState(() {
       _selectedInterval = interval;
       _updateCandleStream();
@@ -77,7 +138,7 @@ class _StockDetailScreenState extends State<StockDetailScreen> {
   void dispose() {
     _quoteSubscription?.cancel();
     _candleStreamSubscription?.cancel();
-    _candleService.dispose();
+    _binanceService.dispose();
     _quoteService.dispose();
     super.dispose();
   }
@@ -134,12 +195,17 @@ class _StockDetailScreenState extends State<StockDetailScreen> {
           children: [
             StockOverviewTab(
               stock: widget.stock,
-              candleStream: _candleStream,
+              // Crypto: live WebSocket stream. Stocks: pass list directly (avoid shared single-sub stream)
+              candleStream: _isCrypto ? _candleStream : null,
+              stockCandles: _isCrypto ? null : (_stockCandles.isNotEmpty ? _stockCandles : null),
+              loadingCandles: _loadingStockCandles,
+              stockCandlesFailed: _stockCandlesFailed,
+              stockCandleSource: _stockCandleSource,
               liveQuote: _liveQuote,
               candlePrice: _candlePrice,
               candleChangePercent: _candleChangePercent,
               selectedInterval: _selectedInterval,
-              onIntervalChanged: isCryptoSymbol(widget.stock.ticker) ? _onIntervalChanged : null,
+              onIntervalChanged: _isCrypto ? _onIntervalChanged : null,
             ),
             StockInsightTab(stock: widget.stock),
           ],
@@ -152,6 +218,10 @@ class _StockDetailScreenState extends State<StockDetailScreen> {
 class StockOverviewTab extends StatelessWidget {
   final StockSummary stock;
   final Stream<List<Candle>>? candleStream;
+  final List<Candle>? stockCandles;
+  final bool loadingCandles;
+  final bool stockCandlesFailed;
+  final String stockCandleSource;
   final Quote? liveQuote;
   final double? candlePrice;
   final double? candleChangePercent;
@@ -162,6 +232,10 @@ class StockOverviewTab extends StatelessWidget {
     super.key,
     required this.stock,
     this.candleStream,
+    this.stockCandles,
+    this.loadingCandles = false,
+    this.stockCandlesFailed = false,
+    this.stockCandleSource = '',
     this.liveQuote,
     this.candlePrice,
     this.candleChangePercent,
@@ -355,16 +429,20 @@ class StockOverviewTab extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        candleStream != null
+                        onIntervalChanged != null
                             ? 'Live price (${selectedInterval ?? '1m'} candles)'
-                            : 'Live price (demo stream)',
+                            : (candleStream != null || (stockCandles?.isNotEmpty == true))
+                                ? '1-Year Price History'
+                                : loadingCandles
+                                    ? 'Loading chart...'
+                                    : 'Price chart unavailable',
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                       const Spacer(),
                       _Chip(
-                        label: 'Real-time',
+                        label: onIntervalChanged != null ? 'Live' : 'Daily',
                         background: colorScheme.primary.withOpacity(0.1),
                         textColor: colorScheme.primary,
                       ),
@@ -378,16 +456,51 @@ class StockOverviewTab extends StatelessWidget {
                     ),
                   ],
                   const SizedBox(height: 12),
-                  LiveLineChart(
-                    lineColor: isPositive ? Colors.green[600]! : Colors.red[600]!,
-                    candleStream: candleStream,
-                    symbol: stock.ticker,
-                  ),
+                  if (loadingCandles)
+                    const SizedBox(
+                      height: 120,
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  else if (stockCandlesFailed)
+                    SizedBox(
+                      height: 120,
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.cloud_off_outlined,
+                                color: Colors.white38, size: 32),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Chart data unavailable.\nAdd an Alpha Vantage key in api_config.dart.',
+                              textAlign: TextAlign.center,
+                              style: theme.textTheme.bodySmall
+                                  ?.copyWith(color: Colors.white38),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  else
+                    LiveLineChart(
+                      lineColor: isPositive ? Colors.green[600]! : Colors.red[600]!,
+                      // Each chart widget gets its own Stream.value() to avoid single-sub conflicts
+                      candleStream: candleStream ??
+                          (stockCandles != null && stockCandles!.isNotEmpty
+                              ? Stream.value(List<Candle>.from(stockCandles!))
+                              : null),
+                      symbol: stock.ticker,
+                      isLive: onIntervalChanged != null,
+                    ),
                   const SizedBox(height: 8),
                   Text(
-                    candleStream != null
+                    onIntervalChanged != null
                         ? 'Real-time 1-minute candles from Binance WebSocket.'
-                        : 'Simulated live data to visualize intraday action.',
+                        : (candleStream != null || (stockCandles?.isNotEmpty == true))
+                            ? '1-year daily close prices from $stockCandleSource.'
+                            : stockCandlesFailed
+                                ? 'Could not load data. Check your API key.'
+                                : 'Historical data unavailable for this symbol.',
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: Colors.white70,
                     ),
@@ -434,10 +547,35 @@ class StockOverviewTab extends StatelessWidget {
                     ),
                   ],
                   const SizedBox(height: 12),
-                  if (candleStream != null)
+                  if (loadingCandles)
+                    const SizedBox(
+                      height: 120,
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  else if (stockCandlesFailed)
+                    SizedBox(
+                      height: 120,
+                      child: Center(
+                        child: Text(
+                          'Chart data unavailable',
+                          style: theme.textTheme.bodySmall
+                              ?.copyWith(color: Colors.white38),
+                        ),
+                      ),
+                    )
+                  else if (candleStream != null)
                     LiveCandlestickChart(
                       candleStream: candleStream!,
                       symbol: stock.ticker,
+                      isStock: false,
+                    )
+                  else if (stockCandles != null && stockCandles!.isNotEmpty)
+                    // Each widget gets its own Stream.value() - no shared single-sub stream
+                    LiveCandlestickChart(
+                      candleStream: Stream.value(List<Candle>.from(stockCandles!)),
+                      symbol: stock.ticker,
+                      isStock: true,
+                      source: stockCandleSource,
                     )
                   else
                     LiveLineChart(lineColor: colorScheme.primary),
@@ -516,11 +654,15 @@ class StockOverviewTab extends StatelessWidget {
 class LiveCandlestickChart extends StatefulWidget {
   final Stream<List<Candle>> candleStream;
   final String symbol;
+  final bool isStock;
+  final String source;
 
   const LiveCandlestickChart({
     super.key,
     required this.candleStream,
     required this.symbol,
+    this.isStock = false,
+    this.source = '',
   });
 
   @override
@@ -626,7 +768,9 @@ class _LiveCandlestickChartState extends State<LiveCandlestickChart> {
         ),
         const SizedBox(height: 8),
         Text(
-          'Live Binance (${widget.symbol}) • \$${_candles.last.close.toStringAsFixed(2)}',
+          widget.isStock
+              ? '${widget.source.isNotEmpty ? widget.source : 'Historical'} (${widget.symbol}) • \$${_candles.last.close.toStringAsFixed(2)}'
+              : 'Live Binance (${widget.symbol}) • \$${_candles.last.close.toStringAsFixed(2)}',
           style: theme.textTheme.bodySmall?.copyWith(
             color: Colors.white70,
             fontWeight: FontWeight.w600,

@@ -1,0 +1,78 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Allow read access to market data (public data)
+    match /market_data/{symbol} {
+      allow read: if isAuthenticated();
+      allow write: if false; // Only backend can write
+
+      // Allow read access to candles subcollection
+      match /candles/{candleId} {
+        allow read: if isAuthenticated();
+        allow write: if false;
+      }
+    }
+
+    // Allow read access to indicators (public data)
+    match /indicators/{symbol} {
+      allow read: if isAuthenticated();
+      allow write: if false; // Only backend can write
+    }
+
+    // Allow read access to valuations (public data)
+    match /valuations/{symbol} {
+      allow read: if isAuthenticated();
+      allow write: if false; // Only backend can write
+
+      match /dcf/{date} {
+        allow read: if isAuthenticated();
+        allow write: if false;
+      }
+    }
+
+    // Allow read access to lessons (public data)
+    match /lessons/{lessonId} {
+      allow read: if isAuthenticated();
+      allow write: if false; // Only backend can write
+
+      match /screens/{screenId} {
+        allow read: if isAuthenticated();
+        allow write: if false;
+      }
+    }
+
+    // User-specific data (profiles, watchlist, progress, bookmarks)
+    match /users/{userId} {
+      // Users can read/write their own profile
+      allow read, write: if isOwner(userId);
+
+      match /watchlist/{symbol} {
+        allow read, write: if isOwner(userId);
+      }
+
+      match /lesson_progress/{lessonId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      match /bookmarks/{lessonId} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+
+    // Default: deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

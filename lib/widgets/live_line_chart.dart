@@ -14,6 +14,7 @@ class LiveLineChart extends StatefulWidget {
   final double start;
   final Stream<List<Candle>>? candleStream;
   final String? symbol;
+  final bool isLive;
 
   const LiveLineChart({
     super.key,
@@ -22,6 +23,7 @@ class LiveLineChart extends StatefulWidget {
     this.start = 100,
     this.candleStream,
     this.symbol,
+    this.isLive = false,
   });
 
   @override
@@ -132,7 +134,9 @@ class _LiveLineChartState extends State<LiveLineChart> {
         const SizedBox(height: 8),
         Text(
           widget.candleStream != null
-              ? 'Live Binance (${widget.symbol}) • \$${_points.last.toStringAsFixed(2)}'
+              ? (widget.isLive
+                  ? 'Live Binance (${widget.symbol}) • \$${_points.last.toStringAsFixed(2)}'
+                  : '${widget.symbol ?? ''} • \$${_points.last.toStringAsFixed(2)}')
               : 'Live demo feed • ${_points.last.toStringAsFixed(2)}',
           style: theme.textTheme.bodySmall?.copyWith(
             color: Colors.white70,
