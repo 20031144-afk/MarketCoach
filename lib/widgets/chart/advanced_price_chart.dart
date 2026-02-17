@@ -32,6 +32,20 @@ class AdvancedPriceChart extends StatefulWidget {
 }
 
 class _AdvancedPriceChartState extends State<AdvancedPriceChart> {
+  late final ZoomPanBehavior _zoomPanBehavior;
+
+  @override
+  void initState() {
+    super.initState();
+    _zoomPanBehavior = ZoomPanBehavior(
+      enablePinching: true,
+      enablePanning: true,
+      enableDoubleTapZooming: true,
+      enableMouseWheelZooming: true,
+      enableSelectionZooming: true,
+      zoomMode: ZoomMode.x,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -126,6 +140,39 @@ class _AdvancedPriceChartState extends State<AdvancedPriceChart> {
 
     return Column(
       children: [
+        // Zoom controls
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.zoom_in, size: 20),
+              onPressed: () => _zoomPanBehavior.zoomIn(),
+              tooltip: 'Zoom in',
+              color: Colors.white54,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+            ),
+            const SizedBox(width: 8),
+            IconButton(
+              icon: const Icon(Icons.zoom_out, size: 20),
+              onPressed: () => _zoomPanBehavior.zoomOut(),
+              tooltip: 'Zoom out',
+              color: Colors.white54,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+            ),
+            const SizedBox(width: 8),
+            IconButton(
+              icon: const Icon(Icons.fit_screen, size: 20),
+              onPressed: () => _zoomPanBehavior.reset(),
+              tooltip: 'Reset zoom',
+              color: Colors.white54,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
         // Main Chart
         SizedBox(
           height: 350,
@@ -156,11 +203,7 @@ class _AdvancedPriceChartState extends State<AdvancedPriceChart> {
               enableAutoIntervalOnZooming: true,
             ),
             trackballBehavior: widget.trackballBehavior,
-            zoomPanBehavior: ZoomPanBehavior(
-              enablePinching: true,
-              enablePanning: true,
-              zoomMode: ZoomMode.x,
-            ),
+            zoomPanBehavior: _zoomPanBehavior,
             series: <CartesianSeries>[
               // Bollinger Bands (if enabled) - draw first so it's in background
               if (bollingerBands != null) ...[
