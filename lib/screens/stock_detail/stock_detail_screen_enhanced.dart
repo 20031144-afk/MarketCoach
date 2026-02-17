@@ -31,6 +31,8 @@ class StockDetailScreenEnhanced extends ConsumerStatefulWidget {
 
 class _StockDetailScreenEnhancedState extends ConsumerState<StockDetailScreenEnhanced> {
   final _candleService = BinanceCandleService();
+  final _yahooService = YahooFinanceCandleService();
+  final _alphaVantageService = AlphaVantageCandleService();
   final _quoteService = BinanceQuoteService();
 
   StreamSubscription<List<Candle>>? _candleSubscription;
@@ -40,11 +42,12 @@ class _StockDetailScreenEnhancedState extends ConsumerState<StockDetailScreenEnh
   Quote? _liveQuote;
   bool _isWatchlisted = false;
   bool _hasError = false;
+  bool _isLoading = false;
   String? _errorMessage;
 
   // Chart controls
   ChartType _chartType = ChartType.candlestick;
-  String _timeframe = '1h';
+  String _timeframe = '1h'; // overridden in initState for stocks
   bool _showRSI = true;
   bool _showMACD = true;
 
@@ -57,14 +60,16 @@ class _StockDetailScreenEnhancedState extends ConsumerState<StockDetailScreenEnh
   @override
   void initState() {
     super.initState();
+    _timeframe = isCryptoSymbol(widget.stock.ticker) ? '1h' : '1D';
     _loadData();
   }
 
   void _loadData() {
-    // Only load real-time data for crypto
     if (isCryptoSymbol(widget.stock.ticker)) {
       _subscribeToCandles();
       _subscribeToQuotes();
+    } else {
+      _fetchStockCandles();
     }
   }
 
@@ -122,10 +127,68 @@ class _StockDetailScreenEnhancedState extends ConsumerState<StockDetailScreenEnh
   }
 
   void _onTimeframeChanged(String timeframe) {
-    setState(() {
-      _timeframe = timeframe;
+    setState(() => _timeframe = timeframe);
+    if (isCryptoSymbol(widget.stock.ticker)) {
       _subscribeToCandles();
+    } else {
+      _fetchStockCandles();
+    }
+  }
+
+  Future<void> _fetchStockCandles() async {
+    setState(() {
+      _isLoading = true;
+      _hasError = false;
+      _errorMessage = null;
+      _candles = [];
     });
+
+    // Map stock timeframe selector to Yahoo Finance params
+    String interval;
+    String range;
+    int alphaVantageDays;
+    switch (_timeframe) {
+      case '1W':
+        interval = '1d';  range = '2y';  alphaVantageDays = 730; break;
+      case '1M':
+        interval = '1wk'; range = '1y';  alphaVantageDays = 0;   break;
+      case '3M':
+        interval = '1d';  range = '3mo'; alphaVantageDays = 90;  break;
+      case '1Y':
+        interval = '1mo'; range = '5y';  alphaVantageDays = 0;   break;
+      default: // '1D'
+        interval = '1d';  range = '1y';  alphaVantageDays = 365;
+    }
+
+    List<Candle> candles = [];
+
+    // For daily intervals try Alpha Vantage first (more reliable)
+    if (alphaVantageDays > 0) {
+      candles = await _alphaVantageService.fetchDailyCandles(
+        widget.stock.ticker,
+        days: alphaVantageDays,
+      );
+    }
+
+    // Fall back to Yahoo Finance (also used for weekly/monthly intervals)
+    if (candles.isEmpty) {
+      candles = await _yahooService.fetchCandles(
+        widget.stock.ticker,
+        interval: interval,
+        range: range,
+      );
+    }
+
+    if (mounted) {
+      setState(() {
+        _candles = candles;
+        _isLoading = false;
+        _hasError = candles.isEmpty;
+        if (candles.isEmpty) {
+          _errorMessage = 'No chart data available for ${widget.stock.ticker}';
+        }
+      });
+    }
   }
 
   void _toggleWatchlist() {
@@ -206,6 +269,7 @@ class _StockDetailScreenEnhancedState extends ConsumerState<StockDetailScreenEnh
                         child: _TimeframeSelector(
                           selectedTimeframe: _timeframe,
                           onChanged: _onTimeframeChanged,
+                          isCrypto: isCryptoSymbol(widget.stock.ticker),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -249,7 +313,7 @@ class _StockDetailScreenEnhancedState extends ConsumerState<StockDetailScreenEnh
                     padding: const EdgeInsets.all(12),
                     child: _hasError
                         ? _buildErrorChart()
-                        : _candles.isEmpty
+                        : (_isLoading || _candles.isEmpty)
                             ? _buildLoadingChart()
                             : AdvancedPriceChart(
                             candles: _candles,
@@ -535,7 +599,11 @@ class _StockDetailScreenEnhancedState extends ConsumerState<StockDetailScreenEnh
                 _hasError = false;
                 _errorMessage = null;
               });
-              _subscribeToCandles();
+              if (isCryptoSymbol(widget.stock.ticker)) {
+                _subscribeToCandles();
+              } else {
+                _fetchStockCandles();
+              }
             },
           ),
         ],
@@ -822,17 +890,21 @@ class _FundamentalChip extends StatelessWidget {
 class _TimeframeSelector extends StatelessWidget {
   final String selectedTimeframe;
   final ValueChanged<String> onChanged;
+  final bool isCrypto;
 
   const _TimeframeSelector({
     required this.selectedTimeframe,
     required this.onChanged,
+    this.isCrypto = true,
   });
 
-  static const timeframes = ['1h', '4h', '1d', '1w', '1M'];
+  static const _cryptoTimeframes = ['1h', '4h', '1d', '1w', '1M'];
+  static const _stockTimeframes  = ['1D', '1W', '1M', '3M', '1Y'];
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final timeframes = isCrypto ? _cryptoTimeframes : _stockTimeframes;
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,

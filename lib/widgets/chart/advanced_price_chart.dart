@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:intl/intl.dart';
@@ -90,6 +92,38 @@ class _AdvancedPriceChartState extends State<AdvancedPriceChart> {
         break;
     }
 
+    // Compute smart X-axis settings from the actual date range
+    final duration =
+        widget.candles.last.time.difference(widget.candles.first.time);
+
+    DateTimeIntervalType xIntervalType;
+    DateFormat xLabelFormat;
+    double xInterval;
+
+    if (duration.inDays <= 3) {
+      xIntervalType = DateTimeIntervalType.hours;
+      xLabelFormat = DateFormat('HH:mm');
+      xInterval = 4;
+    } else if (duration.inDays <= 90) {
+      xIntervalType = DateTimeIntervalType.days;
+      xLabelFormat = DateFormat('MMM dd');
+      xInterval = max(7, (duration.inDays / 6).ceilToDouble());
+    } else if (duration.inDays <= 400) {
+      xIntervalType = DateTimeIntervalType.months;
+      xLabelFormat = DateFormat('MMM');
+      xInterval = 1;
+    } else {
+      xIntervalType = DateTimeIntervalType.months;
+      xLabelFormat = DateFormat("MMM ''yy");
+      xInterval = 3;
+    }
+
+    // Y-axis number format — compact for large prices (BTC, etc.)
+    final maxPrice =
+        widget.candles.map((c) => c.high).reduce((a, b) => a > b ? a : b);
+    final yNumberFormat =
+        maxPrice >= 10000 ? NumberFormat('#,##0') : NumberFormat('#,##0.##');
+
     return Column(
       children: [
         // Main Chart
@@ -97,11 +131,16 @@ class _AdvancedPriceChartState extends State<AdvancedPriceChart> {
           height: 350,
           child: SfCartesianChart(
             plotAreaBorderWidth: 0,
+            plotAreaBorderColor: Colors.transparent,
             primaryXAxis: DateTimeAxis(
               majorGridLines: const MajorGridLines(width: 0),
               axisLine: const AxisLine(width: 0),
               labelStyle: const TextStyle(color: Colors.white70, fontSize: 10),
-              dateFormat: DateFormat('MMM dd'),
+              dateFormat: xLabelFormat,
+              intervalType: xIntervalType,
+              interval: xInterval,
+              edgeLabelPlacement: EdgeLabelPlacement.shift,
+              enableAutoIntervalOnZooming: true,
             ),
             primaryYAxis: NumericAxis(
               majorGridLines: MajorGridLines(
@@ -111,6 +150,10 @@ class _AdvancedPriceChartState extends State<AdvancedPriceChart> {
               axisLine: const AxisLine(width: 0),
               labelStyle: const TextStyle(color: Colors.white70, fontSize: 10),
               opposedPosition: true,
+              desiredIntervals: 5,
+              numberFormat: yNumberFormat,
+              edgeLabelPlacement: EdgeLabelPlacement.shift,
+              enableAutoIntervalOnZooming: true,
             ),
             trackballBehavior: widget.trackballBehavior,
             zoomPanBehavior: ZoomPanBehavior(
@@ -396,6 +439,7 @@ class _AdvancedPriceChartState extends State<AdvancedPriceChart> {
             bullColor: Colors.green,
             bearColor: Colors.red,
             enableSolidCandles: true,
+            spacing: 0.2,
             name: 'Price',
           ),
         ];
